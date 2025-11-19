@@ -31,12 +31,22 @@ def _set_cookie(resp: Response, name: str, value: str, expires_unix: int):
         secure=True,       # 👈 REQUIRED when SameSite=None
         expires=expires_unix,
         path="/",
-        # domain is omitted so it defaults to the backend host (capstone-itrack.onrender.com)
+        # domain omitted → default = backend host (capstone-itrack.onrender.com)
     )
 
 
 def _clear_cookie(resp: Response, name: str):
-    resp.delete_cookie(key=name, path="/")
+    """
+    Clear cookies using the same attributes as when they were set.
+    This ensures browsers actually remove them for cross-site cookies.
+    """
+    resp.delete_cookie(
+        key=name,
+        path="/",
+        samesite="none",
+        secure=True,
+        # domain omitted for same reason as _set_cookie
+    )
 
 
 def _user_id_from_access_cookie(access_token: str | None) -> Optional[int]:
