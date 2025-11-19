@@ -33,24 +33,24 @@ def root():
 # ----------------------------------------------------------
 # Base allowed origins (hard-coded)
 base_origins = [
-    "https://itrack-student-view.vercel.app",  # Vercel frontend
-    "http://localhost:5173",                   # local dev (Vite)
+    "https://captsone-itrack.vercel.app",      # Vercel frontend - main system
+    "https://itrack-student-view.vercel.app",  # Vercel frontend - student view
+    "http://localhost:3000",                   # local React dev
+    "http://localhost:5173",                   # local Vite dev (if ever used)
 ]
 
 # Extra origins from env (optional)
-env_origins = os.getenv(
-    "CORS_ALLOWED_ORIGINS",
-    ""  # you can set more in Render if needed
-)
-
+env_origins = os.getenv("CORS_ALLOWED_ORIGINS", "")
 extra_origins = [o.strip() for o in env_origins.split(",") if o.strip()]
 
 origins = base_origins + extra_origins
 
+print("CORS allowed origins:", origins)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_credentials=True,
+    allow_credentials=True,   # needed for cookies (login, refresh)
     allow_methods=["*"],
     allow_headers=["*"],
 )
