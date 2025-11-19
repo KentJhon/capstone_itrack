@@ -33,7 +33,7 @@ def root():
 # ----------------------------------------------------------
 # Base allowed origins (hard-coded)
 base_origins = [
-    "https://captsone-itrack.vercel.app",      # Vercel frontend - main system
+    "https://capstone-itrack.vercel.app",      # Vercel frontend - main system
     "https://itrack-student-view.vercel.app",  # Vercel frontend - student view
     "http://localhost:3000",                   # local React dev
     "http://localhost:5173",                   # local Vite dev (if ever used)

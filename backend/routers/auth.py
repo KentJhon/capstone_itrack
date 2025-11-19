@@ -18,14 +18,20 @@ COOKIE_DOMAIN = os.getenv("COOKIE_DOMAIN", "localhost")
 
 
 def _set_cookie(resp: Response, name: str, value: str, expires_unix: int):
+    """
+    Set auth cookies so they work across domains (Vercel -> Render).
+
+    SameSite=None + Secure=True is required for cross-site cookies.
+    """
     resp.set_cookie(
         key=name,
         value=value,
         httponly=True,
-        samesite="lax",
-        secure=False,
+        samesite="none",   # 👈 IMPORTANT for cross-site
+        secure=True,       # 👈 REQUIRED when SameSite=None
         expires=expires_unix,
         path="/",
+        # domain is omitted so it defaults to the backend host (capstone-itrack.onrender.com)
     )
 
 
