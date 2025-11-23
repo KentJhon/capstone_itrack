@@ -1,0 +1,44 @@
+# -----------------------
+# Node / React frontend
+# -----------------------
+node_modules/
+build/
+dist/
+.vite/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# -----------------------
+# Python backend
+# -----------------------
+__pycache__/
+*.py[cod]
+*.so
+.venv/
+venv/
+env/
+.pytest_cache/
+.coverage
+coverage.*
+htmlcov/
+*.egg-info/
+.eggs/
+
+# -----------------------
+# Environment / secrets
+# -----------------------
+.env
+.env.*
+!.env.example
+
+# -----------------------
+# Editors / OS junk
+# -----------------------
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
