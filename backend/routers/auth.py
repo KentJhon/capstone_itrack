@@ -1,37 +1,71 @@
 # backend/routers/auth.py
 import logging
 import os
-
 from typing import Optional
+
 from fastapi import APIRouter, HTTPException, Form, Response, Cookie
 from pydantic import EmailStr
 import mysql.connector
+from passlib.hash import argon2 as pwd
 
 from security.jwt_tools import sign_access, sign_refresh, verify_token
 from security.deps import COOKIE_NAME_AT, COOKIE_NAME_RT
 from routers.activity_logger import log_activity
-
-from passlib.hash import argon2 as pwd
 from db import get_db
 
 router = APIRouter(tags=["auth"])
-COOKIE_DOMAIN = os.getenv("COOKIE_DOMAIN", "localhost")
+
+# ----------------------------------------------------------
+# Cookie helpers
+# ----------------------------------------------------------
+
+# In Render, set e.g. COOKIE_DOMAIN=captstone-itrack.onrender.com
+COOKIE_DOMAIN = os.getenv("COOKIE_DOMAIN") or None
 
 
-def _set_cookie(resp: Response, name: str, value: str, expires_unix: int):
-    resp.set_cookie(
-        key=name,
-        value=value,
-        httponly=True,
-        samesite="lax",
-        secure=False,
-        expires=expires_unix,
-        path="/",
-    )
+def _cookie_profile() -> tuple[Optional[str], bool, str]:
+    """
+    Decide cookie domain, secure and samesite based on environment.
+
+    - Local dev (no COOKIE_DOMAIN or 'localhost'):
+        domain = None, secure = False, samesite = "lax"
+    - Production (real domain):
+        domain = COOKIE_DOMAIN, secure = True, samesite = "none"
+    """
+    if not COOKIE_DOMAIN or "localhost" in COOKIE_DOMAIN:
+        return None, False, "lax"
+    return COOKIE_DOMAIN, True, "none"
 
 
-def _clear_cookie(resp: Response, name: str):
-    resp.delete_cookie(key=name, path="/")
+def _set_cookie(resp: Response, name: str, value: str, expires_unix: int) -> None:
+    domain, secure, samesite = _cookie_profile()
+    kwargs = {
+        "key": name,
+        "value": value,
+        "httponly": True,
+        "samesite": samesite,
+        "secure": secure,
+        "expires": expires_unix,
+        "path": "/",
+    }
+    if domain:
+        kwargs["domain"] = domain
+
+    resp.set_cookie(**kwargs)
+
+
+def _clear_cookie(resp: Response, name: str) -> None:
+    domain, secure, samesite = _cookie_profile()
+    kwargs = {
+        "key": name,
+        "path": "/",
+        "samesite": samesite,
+        "secure": secure,
+    }
+    if domain:
+        kwargs["domain"] = domain
+
+    resp.delete_cookie(**kwargs)
 
 
 def _user_id_from_access_cookie(access_token: str | None) -> Optional[int]:
@@ -46,6 +80,9 @@ def _user_id_from_access_cookie(access_token: str | None) -> Optional[int]:
     return None
 
 
+# ----------------------------------------------------------
+# Register
+# ----------------------------------------------------------
 @router.post("/register")
 def register(
     username: str = Form(...),
@@ -56,7 +93,9 @@ def register(
     access_token: str | None = Cookie(default=None, alias=COOKIE_NAME_AT),
 ):
     if len(password) < 6:
-        raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+        raise HTTPException(
+            status_code=400, detail="Password must be at least 6 characters"
+        )
 
     try:
         hashed_pw = pwd.hash(password)
@@ -73,10 +112,14 @@ def register(
         # Resolve role id
         resolved_role_id = None
         if roles_id is not None:
-            cursor.execute("SELECT role_name FROM roles WHERE roles_id=%s", (roles_id,))
+            cursor.execute(
+                "SELECT role_name FROM roles WHERE roles_id=%s", (roles_id,)
+            )
             r = cursor.fetchone()
             if not r:
-                raise HTTPException(status_code=400, detail=f"Unknown roles_id: {roles_id}")
+                raise HTTPException(
+                    status_code=400, detail=f"Unknown roles_id: {roles_id}"
+                )
             resolved_role_id = roles_id
         elif role:
             role_clean = role.strip()
@@ -86,17 +129,22 @@ def register(
             )
             r = cursor.fetchone()
             if not r:
-                raise HTTPException(status_code=400, detail=f"Unknown role: {role}")
+                raise HTTPException(
+                    status_code=400, detail=f"Unknown role: {role}"
+                )
             resolved_role_id = r["roles_id"]
         else:
-            cursor.execute("SELECT roles_id FROM roles WHERE LOWER(role_name)='admin'")
+            cursor.execute(
+                "SELECT roles_id FROM roles WHERE LOWER(role_name)='admin'"
+            )
             r = cursor.fetchone()
             resolved_role_id = r["roles_id"] if r else 1
 
         logging.info(f"/register resolved_role_id={resolved_role_id}")
 
         cursor.execute(
-            "INSERT INTO `user` (roles_id, username, email, password) VALUES (%s, %s, %s, %s)",
+            "INSERT INTO `user` (roles_id, username, email, password) "
+            "VALUES (%s, %s, %s, %s)",
             (resolved_role_id, username, email, hashed_pw),
         )
         conn.commit()
@@ -115,15 +163,12 @@ def register(
 
         # 🔔 ACTIVITY: created account
         actor_id = _user_id_from_access_cookie(access_token)
-        actor_label = (
-            f"User ID {actor_id}"
-            if actor_id is not None
-            else "System"
-        )
+        actor_label = f"User ID {actor_id}" if actor_id is not None else "System"
         log_activity(
             actor_id,
             "Create",
-            f"{actor_label} created new account: name='{username}', email='{email}'.",
+            f"{actor_label} created new account: "
+            f"name='{username}', email='{email}'.",
         )
 
         return {
@@ -149,6 +194,9 @@ def register(
         conn.close()
 
 
+# ----------------------------------------------------------
+# Login
+# ----------------------------------------------------------
 @router.post("/login")
 def login(resp: Response, username: str = Form(...), password: str = Form(...)):
     conn = get_db()
@@ -198,8 +246,14 @@ def login(resp: Response, username: str = Form(...), password: str = Form(...)):
     }
 
 
+# ----------------------------------------------------------
+# Refresh
+# ----------------------------------------------------------
 @router.post("/refresh")
-def refresh(resp: Response, refresh_token: str | None = Cookie(default=None, alias=COOKIE_NAME_RT)):
+def refresh(
+    resp: Response,
+    refresh_token: str | None = Cookie(default=None, alias=COOKIE_NAME_RT),
+):
     if not refresh_token:
         raise HTTPException(status_code=401, detail="Missing refresh token")
     try:
@@ -219,6 +273,9 @@ def refresh(resp: Response, refresh_token: str | None = Cookie(default=None, ali
     return {"message": "refreshed"}
 
 
+# ----------------------------------------------------------
+# Logout
+# ----------------------------------------------------------
 @router.post("/logout")
 def logout(
     resp: Response,
@@ -242,6 +299,9 @@ def logout(
     return {"message": "Logged out"}
 
 
+# ----------------------------------------------------------
+# Me
+# ----------------------------------------------------------
 @router.get("/me")
 def me(access_token: str | None = Cookie(default=None, alias=COOKIE_NAME_AT)):
     if not access_token:

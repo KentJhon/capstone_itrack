@@ -1,3 +1,4 @@
+# backend/main.py
 import logging
 import os
 import asyncio
@@ -29,6 +30,7 @@ logging.basicConfig(level=logging.INFO)
 
 app = FastAPI()
 
+
 # ----------------------------------------------------------
 # Predictive auto-train scheduler (daily; skips if already ran today)
 # ----------------------------------------------------------
@@ -48,7 +50,9 @@ async def _predictive_auto_train_loop():
                     already_ran_today = False
 
             if not already_ran_today:
-                logging.info("Auto-train: starting predictive retrain from DB history.")
+                logging.info(
+                    "Auto-train: starting predictive retrain from DB history."
+                )
                 await asyncio.get_running_loop().run_in_executor(
                     None, train_from_db_and_persist
                 )
@@ -74,6 +78,7 @@ async def _shutdown():
     if task:
         task.cancel()
 
+
 # ----------------------------------------------------------
 # Root endpoint (health check)
 # ----------------------------------------------------------
@@ -81,10 +86,10 @@ async def _shutdown():
 def root():
     return {"status": "ok"}
 
+
 # ----------------------------------------------------------
-# CORS
+# CORS (needed for cookies from Vercel frontend)
 # ----------------------------------------------------------
-# Base allowed origins (local + deployed)
 base_origins = [
     # Deployed frontend(s)
     "https://itrack-student-view.vercel.app",
@@ -93,28 +98,29 @@ base_origins = [
     # Local React dev servers
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "http://localhost:5173",      # if you use Vite
+    "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
 
-# Extra origins from env (optional; for Render, etc.)
 env_origins = (
-    os.getenv("CORS_ALLOWED_ORIGINS")      # new name
-    or os.getenv("CORS_ORIGINS")          # backward compatible
+    os.getenv("CORS_ALLOWED_ORIGINS")  # preferred
+    or os.getenv("CORS_ORIGINS")       # backward compatible
     or ""
 )
 
 extra_origins = [o.strip() for o in env_origins.split(",") if o.strip()]
-
 origins = base_origins + extra_origins
+
+logging.info("CORS allowed origins: %s", origins)
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_credentials=True,      # ✅ required for cookies
+    allow_credentials=True,   # ✅ required for cookies
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # ----------------------------------------------------------
 # Routers
