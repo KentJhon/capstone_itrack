@@ -88,6 +88,7 @@ def root():
 base_origins = [
     # Deployed frontend(s)
     "https://itrack-student-view.vercel.app",
+    "https://capstone-itrack.vercel.app",
 
     # Local React dev servers
     "http://localhost:3000",
