@@ -1,0 +1,108 @@
+/* Sidebar container */
+#sidebar {
+  background-color: #0C3D60;
+  color: white;
+  height: calc(100vh - 122px);
+  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 60px;
+  bottom: 60px;
+  transition: width 0.3s ease;
+  z-index: 999;
+  overflow: hidden;
+}
+
+#sidebar.open {
+  width: 220px;
+}
+
+/* Sidebar toggle button */
+.sidebar-toggle {
+  position: fixed;
+  top: 70px;
+  bottom: 40px;
+  left: 0;
+  width: 40px;
+  background-color: #0C3D60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1000;
+  transition: left 0.3s ease, transform 0.3s ease;
+  color: white;
+  font-size: 24px;
+}
+
+/* Move toggle with sidebar */
+.sidebar-toggle.shifted {
+  left: 220px;
+}
+
+/* Hide sidebar when closed */
+#sidebar.hidden {
+  transform: translateX(-220px);
+}
+
+/* Sidebar title */
+.sidebar-title {
+  font-size: 22px;
+  font-weight: bold;
+  font-family: 'Book Antiqua', serif;
+  padding: 0 10px 20px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.sidebar-title .arrow {
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* Sidebar Menu */
+#sidebar ul {
+  list-style: none;
+  padding: 15px 0;
+  margin: 0;
+  font-family: 'Book Antiqua', serif;
+}
+
+/* Keep li structural only; no padding here */
+#sidebar li {
+  display: block;
+}
+
+/* Unified clickable row for both <a> and <button> */
+#sidebar .menu-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 20px;         /* padding moved here so full row is clickable */
+  text-decoration: none;
+  color: white;
+  background: transparent;
+  border: none;               /* for button */
+  cursor: pointer;            /* for button */
+  font: inherit;              /* inherit font from sidebar */
+  text-align: left;           /* for button */
+  transition: background 0.3s ease;
+}
+
+/* Icon size */
+#sidebar .menu-link svg,
+#sidebar .icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+/* Hover + active styles */
+#sidebar .menu-link:hover {
+  background-color: #2d4f9c;
+}
+#sidebar .menu-link.active {
+  background-color: #2b4a90;  /* active indicator (tweak as you like) */
+}

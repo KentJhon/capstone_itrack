@@ -1,0 +1,351 @@
+/* --- AccountManagement.css --- */
+
+/* Lock viewport similar to other pages */
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ===== Page Layout ===== */
+
+.account-page {
+  font-family: "Book Antiqua", serif;
+  background: #f3f4f6;
+  padding: 24px 28px;
+  height: calc(100vh - 140px); /* account for top + bottom nav */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow: hidden;
+}
+
+.account-title {
+  margin: 0;
+  font-size: 24px;
+  letter-spacing: 0.02em;
+  color: #111827;
+}
+
+/* Main floating card */
+
+.account-container {
+  flex: 1 1 auto;
+  min-height: 0;
+  background-color: #ffffff;
+  border-radius: 18px;
+  padding: 18px 20px 20px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18),
+    0 4px 12px rgba(148, 163, 184, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Toast */
+
+.toast {
+  display: inline-block;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.toast-success {
+  background: #e8f7ee;
+  color: #0f5132;
+  border: 1px solid #b6ebc6;
+}
+
+/* Header row */
+
+.account-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.account-header h2 {
+  margin: 0;
+  font-size: 18px;
+  color: #111827;
+}
+
+/* ===== Generic Buttons ===== */
+
+.btn {
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 14px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: filter 0.15s ease-in-out, background-color 0.15s ease-in-out;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  white-space: nowrap;
+  min-height: 34px;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+  box-shadow: none;
+}
+
+/* Add User button */
+
+.btn-add {
+  background: linear-gradient(135deg, #1e3a8a, #2563eb);
+  color: #ffffff;
+  border-color: #1d4ed8;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.28);
+}
+
+.btn-add:hover {
+  filter: brightness(1.06);
+}
+
+/* Update button */
+
+.btn-update {
+  background: #16a34a;
+  color: #ffffff;
+  border-color: #15803d;
+}
+
+.btn-update:hover {
+  filter: brightness(1.06);
+}
+
+/* Delete button */
+
+.btn-delete {
+  background: #dc2626;
+  color: #ffffff;
+  border-color: #b91c1c;
+}
+
+.btn-delete:hover {
+  filter: brightness(1.06);
+}
+
+/* Cancel / primary in modals */
+
+.btn-cancel {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.btn-cancel:hover {
+  filter: brightness(1.06);
+}
+
+.btn-primary {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #1d4ed8;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.06);
+}
+
+/* ===== Table & Scroll Area ===== */
+
+.account-table-wrap {
+  margin-top: 6px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* scrollbar */
+.account-table-wrap::-webkit-scrollbar {
+  width: 8px;
+}
+.account-table-wrap::-webkit-scrollbar-track {
+  background: transparent;
+}
+.account-table-wrap::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 999px;
+}
+.account-table-wrap::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+.account-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 720px;
+}
+
+.account-table th,
+.account-table td {
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.account-table thead th {
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  color: #4b5563;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.account-table tbody tr:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+.account-table tbody tr:hover {
+  background-color: #e5edff;
+}
+
+/* Loading & error text */
+
+.muted {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.error-text {
+  color: #b91c1c;
+  font-size: 0.9rem;
+}
+
+/* ===== Modal overlay + window ===== */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45); /* dim background */
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* modal visible */
+.overlay.is-open {
+  display: flex;
+}
+
+/* ensure modal is above the dim layer */
+.overlay.is-open .modal {
+  position: relative;
+  z-index: 2000;
+}
+
+.modal {
+  background: #ffffff;
+  width: 520px;
+  max-width: 92vw;
+  border-radius: 18px;
+  padding: 24px 28px;
+  box-shadow: 0 22px 50px rgba(15, 23, 42, 0.4),
+    0 6px 16px rgba(148, 163, 184, 0.35);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+.modal.modal-sm {
+  max-width: 420px;
+}
+
+.modal-header {
+  margin-bottom: 14px;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* ===== Form layout ===== */
+
+.form-row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-right: 8px;
+}
+
+.form-row label {
+  color: #374151;
+  font-size: 0.92rem;
+}
+
+/* Inputs/selects */
+
+.input,
+.select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cfcfcf;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.input:focus,
+.select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.35);
+}
+
+.form-error {
+  margin-top: 4px;
+  margin-bottom: 8px;
+  color: #b91c1c;
+  font-size: 0.88rem;
+}
+
+/* Modal actions */
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+/* ===== Responsive ===== */
+
+@media (max-width: 768px) {
+  .account-page {
+    padding: 16px;
+    height: auto;
+    overflow: visible;
+  }
+
+  .account-container {
+    padding: 14px 12px;
+  }
+
+  .account-table {
+    min-width: 600px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}

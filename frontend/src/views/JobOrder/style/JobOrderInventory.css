@@ -1,0 +1,346 @@
+/* ===== Page Layout ===== */
+
+.inventory-page {
+  font-family: "Book Antiqua", serif;
+  background: #f3f4f6;
+  padding: 24px 28px;
+  /* Top nav (~70px) + bottom nav (~70px) = 140px
+     Adjust 140px if your navbars are taller/shorter */
+  height: calc(100vh - 140px);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow: hidden; /* page itself does not scroll */
+}
+
+/* ===== Header & Actions ===== */
+
+.inventory-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  flex-shrink: 0; /* keep header height stable */
+}
+
+/* Left side: back button + title */
+.inventory-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #e5e7eb;
+  color: #1e293b;
+  border: none;
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: filter 0.15s ease-in-out;
+}
+
+.back-btn:hover {
+  filter: brightness(1.06);
+}
+
+.back-icon {
+  font-size: 16px;
+}
+
+.inventory-title-group h2,
+.inventory-page h2 {
+  margin: 0;
+  font-size: 24px;
+  letter-spacing: 0.02em;
+  color: #111827;
+}
+
+.inventory-subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.inventory-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* ===== Generic Button Styles ===== */
+
+.btn {
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-size: 14px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: filter 0.15s ease-in-out;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+/* 🔹 Make Add Stock & Add Item same size (top-right buttons only) */
+.inventory-actions .btn {
+  padding: 10px 26px !important;
+  min-width: 150px;
+  height: 40px;
+  text-align: center;
+  font-size: 14px;
+  border-radius: 999px;
+}
+
+/* Primary button (top actions in this page) */
+
+.btn-primary {
+  background: "#2563eb";
+  color: #ffffff;
+  border-color: #1d4ed8;
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.28);
+}
+
+/* Save (green) and Cancel (red) buttons – used in modals */
+
+.btn-save {
+  background: #16a34a; /* green */
+  color: #ffffff;
+  border-color: #15803d;
+  box-shadow: 0 12px 24px rgba(22, 163, 74, 0.35);
+}
+
+.btn-cancel {
+  background: #dc2626; /* red */
+  color: #ffffff;
+  border-color: #b91c1c;
+  box-shadow: 0 12px 24px rgba(220, 38, 38, 0.35);
+}
+
+/* 🔁 One consistent hover for ALL buttons */
+.btn:hover,
+.table-btn:hover {
+  filter: brightness(1.06);
+}
+
+/* ===== Floating Card + Scrollable Table ===== */
+
+.inventory-table-card {
+  flex: 1 1 auto; /* take remaining space under header */
+  min-height: 0; /* important for flex + scroll */
+  background: #ffffff;
+  padding: 18px 20px 20px;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18),
+    0 4px 12px rgba(148, 163, 184, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* keep inner scroll tidy */
+}
+
+/* Only this part scrolls (container scroll) */
+.inventory-table-scroll {
+  margin-top: 6px;
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0; /* prevents pushing card beyond page */
+}
+
+/* Custom scrollbar */
+.inventory-table-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.inventory-table-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.inventory-table-scroll::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 999px;
+}
+
+.inventory-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* ===== Table ===== */
+
+.inventory-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 760px; /* avoid squishing columns */
+}
+
+.inventory-table th,
+.inventory-table td {
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.inventory-table th {
+  background: #f9fafb;
+  color: #4b5563;
+  font-weight: 600;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky; /* header stays visible while scrolling */
+  top: 0;
+  z-index: 2;
+}
+
+.inventory-table tbody tr {
+  transition: background 0.12s ease-in-out;
+}
+
+.inventory-table tbody tr:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+.inventory-table tbody tr:hover {
+  background-color: #e5edff;
+}
+
+/* Actions column aligned to the right */
+.actions-cell {
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Inline table buttons (Edit / Delete) */
+
+.table-btn {
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 12px;
+  border: none;
+  cursor: pointer;
+  margin-left: 4px;
+  transition: filter 0.15s ease-in-out;
+}
+
+.edit-btn {
+  background-color: #1e3a8a;
+  color: #ffffff;
+}
+
+.delete-btn {
+  background-color: #b91c1c;
+  color: #ffffff;
+}
+
+/* Status text */
+
+.status-sufficient {
+  color: #15803d;
+  font-weight: 600;
+}
+
+.status-insufficient {
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+/* ===== Modal ===== */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  backdrop-filter: blur(4px);
+}
+
+.modal {
+  background: #ffffff;
+  padding: 22px 20px 18px;
+  border-radius: 18px;
+  width: 380px;
+  max-width: 90vw;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  box-shadow: 0 22px 50px rgba(15, 23, 42, 0.4),
+    0 6px 16px rgba(148, 163, 184, 0.35);
+  font-family: "Book Antiqua", serif;
+  animation: modalPop 0.2s ease-out;
+}
+
+.modal h3 {
+  margin-bottom: 14px;
+  font-size: 18px;
+  color: #111827;
+}
+
+/* Inputs & selects */
+
+.modal input,
+.modal select {
+  display: block;
+  width: 100%;
+  box-sizing: border-box; /* ensures exact same width */
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background-color: #f9fafb;
+  font-family: inherit;
+  font-size: 14px;
+  transition: border 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.modal input:focus,
+.modal select:focus {
+  outline: none;
+  border-color: #2563eb;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.45);
+}
+
+.modal select:hover {
+  background-color: #f3f4ff;
+  cursor: pointer;
+}
+
+/* Modal buttons row */
+
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+/* Make Save & Cancel inside modals consistent in size and shape */
+.modal-buttons .btn {
+  padding: 9px 22px;
+  min-width: 120px;
+  height: 38px;
+  border-radius: 999px;
+  font-size: 14px;
+  justify-content: center;
+}
+
+/* Pop animation */
+
+@keyframes modalPop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

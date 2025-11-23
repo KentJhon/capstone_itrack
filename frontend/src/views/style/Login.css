@@ -1,0 +1,134 @@
+body, html, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: Arial, sans-serif;
+}
+
+.login-container {
+  display: flex;
+  flex-direction: column; /* stack logo and card */
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 0px);
+  width: 100%;
+  background-image: url("../../assets/BG1.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+}
+
+.login-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 0;
+}
+
+/* Logo + title above box */
+.login-header {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+
+.login-header img {
+  width: 50px;
+  height: auto;
+}
+
+.login-header h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #1A1851; 
+  margin: 0;
+}
+
+/* Login box */
+.login-box {
+  position: relative;
+  z-index: 1;
+  background: rgba(0, 0, 0, 0.75);
+  color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+.login-box h2 {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+  font-weight: normal;
+}
+
+/* Inputs */
+.input-group {
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  padding: 0 10px;
+}
+
+.input-group input {
+  border: none;
+  outline: none;
+  flex: 1;
+  padding: 10px;
+}
+
+/* Checkbox */
+.checkbox {
+  display: flex;
+  align-items: center;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+  justify-content: flex-start;
+}
+
+.checkbox input {
+  margin-right: 8px;
+}
+
+/* Button */
+.login-box button {
+  background-color: #0066cc;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  width: 100%;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.login-box button:hover {
+  background-color: #005bb5;
+}
+.forgot {
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: #ddd;
+}
+
+.forgot a {
+  color: #4da6ff;
+  text-decoration: none;
+}
+
+.forgot a:hover {
+  text-decoration: underline;
+}

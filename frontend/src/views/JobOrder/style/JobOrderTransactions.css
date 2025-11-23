@@ -1,0 +1,305 @@
+/* (Optional) lock page viewport if you want only inner areas scrollable */
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ===== Page Layout ===== */
+
+.inventory-page {
+  font-family: "Book Antiqua", serif;
+  background: #f3f4f6;
+  padding: 24px 28px;
+  /* Top nav (~70px) + bottom nav (~70px) = 140px */
+  height: calc(100vh - 140px);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow: hidden; /* page itself does not scroll */
+}
+
+/* ===== Header & Actions ===== */
+
+.inventory-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  flex-shrink: 0; /* keep header height stable */
+}
+
+/* Left side: back button + title */
+.inventory-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #e5e7eb;
+  color: #1e293b;
+  border: none;
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: filter 0.15s ease-in-out;
+}
+
+.back-btn:hover {
+  filter: brightness(1.06);
+}
+
+.back-icon {
+  font-size: 16px;
+}
+
+.inventory-title-group h2,
+.inventory-page h2 {
+  margin: 0;
+  font-size: 24px;
+  letter-spacing: 0.02em;
+  color: #111827;
+}
+
+.inventory-subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.inventory-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* ===== Generic Button Styles ===== */
+
+.btn {
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-size: 14px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: filter 0.15s ease-in-out;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+/* Top-right buttons same size */
+.inventory-actions .btn {
+  padding: 10px 26px !important;
+  min-width: 150px;
+  height: 40px;
+  text-align: center;
+  font-size: 14px;
+  border-radius: 999px;
+}
+
+/* Primary button (top actions in this page) */
+.btn-primary {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #1d4ed8;
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.28);
+}
+
+/* Save (green) and Cancel (red) – used in other pages/modals if shared */
+.btn-save {
+  background: #16a34a; /* green */
+  color: #ffffff;
+  border-color: #15803d;
+  box-shadow: 0 12px 24px rgba(22, 163, 74, 0.35);
+}
+
+.btn-cancel {
+  background: #dc2626; /* red */
+  color: #ffffff;
+  border-color: #b91c1c;
+  box-shadow: 0 12px 24px rgba(220, 38, 38, 0.35);
+}
+
+/* 🔁 One consistent hover for ALL buttons */
+.btn:hover,
+.table-btn:hover {
+  filter: brightness(1.06);
+}
+
+/* ===== Filters Row ===== */
+
+.filters-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.search-field {
+  padding: 8px 10px;
+  min-width: 220px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  outline: none;
+  background-color: #ffffff;
+  font-family: inherit;
+}
+
+.search-field:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.3);
+}
+
+.sort-select {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background-color: #ffffff;
+  font-size: 14px;
+  outline: none;
+  font-family: inherit;
+}
+
+.sort-select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.3);
+}
+
+/* ===== Floating Card + Scrollable Table ===== */
+
+.inventory-table-card {
+  flex: 1 1 auto; /* take remaining space under header */
+  min-height: 0; /* important for flex + scroll */
+  background: #ffffff;
+  padding: 18px 20px 20px;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18),
+    0 4px 12px rgba(148, 163, 184, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* keep inner scroll tidy */
+}
+
+/* Only this part scrolls */
+.inventory-table-scroll {
+  margin-top: 6px;
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0; /* prevents pushing card beyond page */
+}
+
+/* Custom scrollbar */
+.inventory-table-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.inventory-table-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.inventory-table-scroll::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 999px;
+}
+
+.inventory-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* ===== Table ===== */
+
+.inventory-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 760px; /* avoid squishing columns */
+}
+
+.inventory-table th,
+.inventory-table td {
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.inventory-table th {
+  background: #f9fafb;
+  color: #4b5563;
+  font-weight: 600;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky; /* header stays visible while scrolling */
+  top: 0;
+  z-index: 2;
+}
+
+.inventory-table tbody tr {
+  transition: background 0.12s ease-in-out;
+}
+
+.inventory-table tbody tr:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+.inventory-table tbody tr:hover {
+  background-color: #e5edff;
+}
+
+/* Empty state text */
+.empty-text {
+  font-size: 14px;
+  color: #6b7280;
+  padding: 10px 4px;
+}
+
+/* ===== Responsive (optional) ===== */
+
+@media (max-width: 768px) {
+  .inventory-page {
+    padding: 16px;
+    height: auto;
+  }
+
+  .inventory-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .inventory-actions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .filters-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .search-field {
+    min-width: 100%;
+  }
+
+  .inventory-table-card {
+    padding: 14px 12px;
+  }
+}

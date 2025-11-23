@@ -1,0 +1,236 @@
+/* === Modal Overlay === */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+/* === Modal Box (Scrollable) === */
+.modal-content {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.25);
+  width: 100%;
+  max-width: 720px;
+  max-height: 90vh; /* ✅ limits height */
+  padding: 32px;
+  margin: 0 16px;
+  position: relative;
+  overflow-y: auto; /* ✅ enables scroll inside modal */
+  overflow-x: hidden;
+  scrollbar-width: thin; /* Firefox scrollbar */
+}
+
+/* Optional: prettier scrollbar for Chrome/Edge */
+.modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+.modal-content::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+/* === Slip Header === */
+.orderslip-header h3 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #1e293b;
+  text-align: center;
+  margin: 0;
+}
+
+.orderslip-doccode {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  margin: 8px 0 0;
+}
+
+.orderslip-or-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 4px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.orderslip-or-blank {
+  flex: 1;
+  min-width: 160px;
+  border-bottom: 1px solid #cbd5e1;
+  height: 16px;
+}
+
+.orderslip-or-note {
+  font-weight: 400;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* === QR/Scan Button === */
+.scan-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  color: #1e293b;
+  transition: transform 0.2s ease;
+}
+
+.scan-btn:hover {
+  transform: scale(1.1);
+}
+
+/* === Form Styling === */
+.orderslip-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.orderslip-form label {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.orderslip-form input,
+.orderslip-form select {
+  margin-top: 6px;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background-color: #f1f5f9;
+  font-size: 14px;
+  color: #111827;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.orderslip-form input:focus,
+.orderslip-form select:focus {
+  border-color: #2563eb;
+  background-color: #ffffff;
+}
+
+/* === Row for item + quantity === */
+.orderslip-form .row {
+  display: flex;
+  gap: 12px;
+}
+
+/* === Actions (Buttons) === */
+.orderslip-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.btn-cancel {
+  background: #e5e7eb;
+  color: #111827;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-cancel:hover {
+  background: #d1d5db;
+}
+
+.btn-print {
+  background: #1e40af;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-print:hover {
+  background: #1d4ed8;
+}
+
+/* === Line Buttons === */
+.btn-add-line,
+.btn-remove-line {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Add item */
+.btn-add-line {
+  background: #2563eb;
+  color: #ffffff;
+  align-self: flex-start;
+  margin-top: 12px;
+}
+
+.btn-add-line:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+/* Remove item */
+.btn-remove-line {
+  background: #ef4444;
+  color: #ffffff;
+  margin-top: 24px;
+  align-self: flex-end;
+}
+
+.btn-remove-line:hover {
+  background: #dc2626;
+  transform: scale(1.05);
+}
+
+/* === Better alignment for line rows === */
+.line-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+}
+
+/* === Print mode cleanup === */
+@media print {
+  .modal-overlay {
+    background: none;
+  }
+  .modal-content {
+    box-shadow: none;
+    overflow: visible;
+    height: auto;
+  }
+  .btn-cancel,
+  .btn-print,
+  .btn-remove-line,
+  .btn-add-line {
+    display: none;
+  }
+}

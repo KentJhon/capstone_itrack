@@ -1,0 +1,179 @@
+.orderslip-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #f6f7fb;
+  font-family: "Book Antiqua", Tahoma, Geneva, Verdana, sans-serif;
+  color: #111827;
+}
+
+.orderslip-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+}
+
+.orderslip-main.with-sidebar {
+  margin-left: 240px; /* sidebar width */
+}
+
+.orderslip-main.no-sidebar {
+  margin-left: 0;
+}
+
+/* --- Content Area --- */
+.orderslip-content {
+  flex: 1;
+  padding: 24px 28px 50px;
+  background-color: #f9fafc;
+  min-height: 100vh;
+  overflow-y: auto;
+}
+
+.orderslip-header {
+  margin-bottom: 28px;
+  text-align: center;
+}
+
+.orderslip-title {
+  font-size: 26px;
+  margin: 0;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.orderslip-subtitle {
+  color: #6b7280;
+  font-size: 15px;
+  margin-top: 6px;
+}
+
+/* --- Cards --- */
+/* --- Cards Container (centered grid) --- */
+.orderslip-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 34px;
+  justify-items: center;
+  align-items: center;
+  padding-top: 10px;
+  max-width: 950px; /* keeps them centered as a group */
+  margin: 0 auto; /* centers grid on page */
+}
+
+/* --- Larger, more prominent cards --- */
+.orderslip-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 48px; /* 🌟 Increased spacing between cards */
+  justify-items: center;
+  align-items: center;
+  padding-top: 20px;
+  padding-bottom: 20px; /* extra spacing below */
+  max-width: 1100px; /* slightly wider layout */
+  margin: 0 auto; /* centers entire grid */
+}
+
+/* --- Larger, more prominent cards with extra breathing room --- */
+.orderslip-card {
+  width: 100%;
+  max-width: 320px;
+  height: 210px; /* taller cards */
+  border-radius: 22px;
+  padding: 45px 26px; /* more inner spacing */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  gap: 18px; /* 🌟 more space inside card */
+
+  transition: all 0.25s ease;
+  text-align: center;
+  box-shadow: 0 10px 22px rgba(17, 24, 39, 0.08);
+
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.orderslip-card:hover {
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 16px 32px rgba(17, 24, 39, 0.15);
+}
+
+/* Bigger icons */
+.icon {
+  font-size: 58px;
+  color: #1e293b;
+  transition: transform 0.2s ease;
+}
+
+.orderslip-card:hover .icon {
+  transform: scale(1.15);
+}
+
+/* Category-specific gradients */
+.orderslip-card.garments {
+  background: linear-gradient(135deg, #32d8ff, #a8eeff);
+}
+
+.orderslip-card.book {
+  background: linear-gradient(135deg, #a08cff, #d2c5ff);
+}
+
+.orderslip-card.joborder {
+  background: linear-gradient(135deg, #ff9a9e, #ffb9b3);
+}
+
+.icon {
+  font-size: 58px;
+  color: #1e293b;
+  transition: transform 0.2s ease;
+}
+
+.orderslip-card:hover .icon {
+  transform: scale(1.15);
+}
+/* --- Modal --- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  animation: fadeIn 0.2s ease forwards;
+}
+
+.modal-content {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.25);
+  width: 92%;
+  max-width: 720px;
+  padding: 24px;
+  animation: scaleUp 0.25s ease forwards;
+}
+
+/* --- Animations --- */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleUp {
+  from {
+    transform: scale(0.9);
+    opacity: 0.5;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

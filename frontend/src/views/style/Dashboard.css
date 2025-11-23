@@ -1,0 +1,248 @@
+/* Dashboard main wrapper */
+.dashboard {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: #f5f5f5;
+  font-family: "Book Antiqua", serif;
+}
+
+/* Summary cards row */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)); /* 3 cards */
+  gap: 20px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 15px 18px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.card h2 {
+  margin: 5px 0;
+}
+
+.card-sub {
+  display: block;
+  font-size: 0.8rem;
+  color: #777;
+  margin-top: 2px;
+}
+
+/* ---------- Low stock card ---------- */
+
+.low-stock-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 150px;
+}
+
+.low-stock-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.low-stock-header p {
+  margin: 0;
+}
+
+.low-stock-count-pill {
+  min-width: 36px;
+  height: 32px;
+  border-radius: 999px;
+  background: #ffe8e6;
+  color: #d4380d;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+
+  /* 👇 new: make it feel clickable */
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.low-stock-count-pill:hover {
+  background: #ffd1cc;
+  transform: translateY(-1px);
+}
+
+/* List container */
+.low-stock-list {
+  margin-top: 10px;
+  padding-right: 4px;
+  max-height: 170px;
+  overflow-y: auto;
+}
+
+/* Each row */
+.low-stock-row {
+  padding: 6px 0;
+  border-bottom: 1px dotted #eee;
+}
+
+.low-stock-row:last-child {
+  border-bottom: none;
+}
+
+.low-stock-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+/* Badges for stock / need / restock */
+.low-stock-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 0.75rem;
+}
+
+.badge {
+  padding: 2px 6px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+.badge-stock {
+  background: #f5f5f5;
+  border-color: #d9d9d9;
+}
+
+.badge-need {
+  background: #e6f7ff;
+  border-color: #91d5ff;
+}
+
+.badge-restock {
+  background: #fff1f0;
+  border-color: #ffa39e;
+  font-weight: 600;
+  color: #d4380d;
+}
+
+/* Low-stock placeholders */
+.low-stock-placeholder {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.low-stock-placeholder.good {
+  color: #389e0d;
+}
+
+/* Optional nicer scrollbar for the list */
+.low-stock-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.low-stock-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.low-stock-list::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.15);
+  border-radius: 999px;
+}
+
+/* Charts row -> 2 cards side by side */
+.dashboard-charts-row {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 20px;
+}
+
+/* Each chart card */
+.chart-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 18px 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0; /* each one takes 50% */
+  min-width: 0; /* prevent overflow when labels are long */
+}
+
+/* Chart header (title + filters) */
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.chart-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.chart-filters {
+  display: flex;
+  gap: 8px;
+}
+
+.chart-filters select {
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.85rem;
+  background: #f8f8f8;
+}
+
+/* Chart body area (for ResponsiveContainer) */
+.chart-body {
+  margin-top: 8px;
+  width: 100%;
+  height: 260px;
+}
+
+/* Placeholder (loading / no data) */
+.chart-placeholder {
+  height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #aaa;
+  font-style: italic;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+}
+
+/* Legacy .chart-container (if still used somewhere else) */
+.chart-container {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive tweaks */
+@media (max-width: 1024px) {
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-charts-row {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 640px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-filters {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}

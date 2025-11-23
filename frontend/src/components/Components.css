@@ -1,0 +1,129 @@
+/*header*/
+#header {
+  background-color: #1A1851; 
+  color: white;           
+  padding: 10px 20px;
+
+  display: flex;               
+  align-items: center;         
+  justify-content: space-between; 
+
+  position: fixed;   
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50px;     
+  z-index: 1000;   
+}
+
+.brand {
+  display: flex;              
+  align-items: center;        
+  gap: 10px;                  
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand .logo {
+  width: 50px;
+  height: 50px;
+}
+
+#accountLogo.account-icon {
+  font-size: 40px;
+  color: #fff;
+  cursor: pointer;
+  transition: transform .15s ease, color .15s ease;
+}
+
+#accountLogo.account-icon:hover {
+  color: #37357a;
+  transform: scale(1.03);
+}
+
+/* dropdown positioned at the bottom-right of the header, under the icon */
+.logout-popup {
+  position: absolute;
+  right: 50px;        /* nudge left to sit closer under the icon */
+  top: calc(100% - 4px);   /* just below the header */
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 8px 18px rgba(0,0,0,.08);
+  padding: 10px;
+  z-index: 1000;
+  min-width: 140px;
+}
+.user-info {
+  padding: 8px 5px 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.user-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1A1851; /* USTP dark blue */
+  margin: 0;
+}
+
+.user-role {
+  font-size: 12px;
+  color: #555;
+  margin: 2px 0 0;
+}
+
+
+.logout-popup button {
+  width: 100%;
+  background: #37357a;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.logout-popup button:hover {
+  background: #36346a;
+}
+
+#header h1 {
+  font-size: 20px;
+  margin: 0;
+  font-family: 'Book Antiqua', serif;
+}
+.logo {
+  width: 50px;      
+  height: 50px;      
+}
+
+#accountLogo {
+  width: 40px;
+  height: 40px;
+  color: white;
+  margin-right: 50px;
+}
+
+/* Footer */
+#footer {
+  background-color: #1A1851; 
+  color: white;
+  text-align: left;
+  padding: 5px;
+  font-family: 'Book Antiqua', serif;
+  font-size: 10px;
+  position: fixed;   
+  bottom: 0;
+  left: 0;
+  width: 100%;
+}
+#footer p {
+  margin-left: 15px;
+}

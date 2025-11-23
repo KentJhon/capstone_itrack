@@ -1,0 +1,455 @@
+/* 🔒 Lock the whole page & viewport (same behavior as inventory) */
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden; /* page is fixed, only inner scroll areas move */
+}
+
+/* ===== Stockcard Page Layout (match inventory UI) ===== */
+
+.stockcard-container {
+  font-family: "Book Antiqua", serif;
+  background: #f3f4f6;
+  padding: 24px 28px;
+  /* Top nav (~70px) + bottom nav (~70px) = 140px */
+  height: calc(100vh - 140px);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden; /* page itself does not scroll */
+}
+
+/* ===== Header (title + selector lives under this) ===== */
+
+.page-title {
+  margin: 0;
+  font-size: 24px;
+  letter-spacing: 0.02em;
+  color: #111827;
+}
+
+/* Item selector row acts like a header sub-row */
+.item-selector-bar {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.item-selector-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.item-select {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  min-width: 260px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+/* Error message styled like inventory error-message */
+.error-text {
+  margin: 4px 0 0;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+/* ===== Top meta area (Item / Description / Stock / Reorder) ===== */
+
+.stockcard-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08),
+    0 2px 6px rgba(148, 163, 184, 0.25);
+  flex-shrink: 0;
+}
+
+.meta-left,
+.meta-right {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.meta-row-ui {
+  display: flex;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.meta-label-ui {
+  font-weight: 600;
+  color: #374151;
+  min-width: 105px;
+}
+
+.meta-value-ui {
+  color: #111827;
+}
+
+/* ===== Filters / Controls row (like filters-row) ===== */
+
+.controls-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.search-field {
+  padding: 8px 10px;
+  min-width: 220px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  outline: none;
+  background-color: #ffffff;
+  font-family: inherit;
+}
+
+.search-field:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.3);
+}
+
+/* ===== Buttons on the right (Save, Cancel, Add Row, Edit) ===== */
+
+.controls-right {
+  display: flex;
+  gap: 8px;
+}
+
+/* Base style to mimic .btn from inventory */
+.edit-btn,
+.save-btn,
+.cancel-btn,
+.addrow-btn {
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-size: 14px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: filter 0.15s ease-in-out, transform 0.1s ease-in-out,
+    box-shadow 0.15s ease-in-out, background-color 0.15s ease-in-out;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
+}
+
+/* Edit (neutral light) */
+.edit-btn {
+  background: #ffffff;
+  color: #1e3a8a;
+  border-color: #d1d5db;
+}
+
+/* Save (blue primary) */
+.save-btn {
+  background: linear-gradient(135deg, #1e3a8a, #2563eb);
+  color: #ffffff;
+  border-color: #1d4ed8;
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.28);
+}
+
+/* Cancel (red) */
+.cancel-btn {
+  background: linear-gradient(135deg, #b91c1c, #ef4444);
+  color: #ffffff;
+  border-color: #b91c1c;
+  box-shadow: 0 12px 28px rgba(239, 68, 68, 0.28);
+}
+
+/* Add Row (outline-ish neutral) */
+.addrow-btn {
+  background: #ffffff;
+  color: #111827;
+  border-color: #d1d5db;
+}
+
+.edit-btn:hover:not(:disabled),
+.save-btn:hover:not(:disabled),
+.cancel-btn:hover:not(:disabled),
+.addrow-btn:hover:not(:disabled) {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+
+.edit-btn:disabled,
+.save-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+  box-shadow: none;
+}
+
+/* ===== Floating Card + Scrollable Table (match inventory-table-card) ===== */
+
+.table-card {
+  flex: 1 1 auto; /* take leftover space */
+  min-height: 0;
+  background: #ffffff;
+  padding: 16px 18px 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18),
+    0 4px 12px rgba(148, 163, 184, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* inner scroll only */
+  pointer-events: auto;
+}
+
+/* The table region scrolls vertically */
+.table-card.editing-mode {
+  pointer-events: auto;
+}
+
+/* You don't have a separate scroll-wrapper div, so we let tbody area scroll */
+.stockcard-table-wrapper {
+  margin-top: 6px;
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* If you don't use .stockcard-table-wrapper in JSX, this still helps:
+   table-card will scroll when needed. */
+.table-card {
+  overflow-y: auto;
+}
+
+/* Custom scrollbar (WebKit) */
+.table-card::-webkit-scrollbar {
+  width: 8px;
+}
+
+.table-card::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.table-card::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 999px;
+}
+
+.table-card::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* ===== Table (styled like inventory-table) ===== */
+
+.stockcard-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 760px; /* avoid squishing columns */
+}
+
+.stockcard-table th,
+.stockcard-table td {
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.stockcard-table th {
+  background: #f9fafb;
+  color: #4b5563;
+  font-weight: 600;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.stockcard-table td {
+  border-bottom: 1px solid #e5e7eb;
+  color: #111827;
+  cursor: default !important;
+}
+
+.stockcard-table .text-left {
+  text-align: left;
+}
+
+/* Row styling */
+.stockcard-table tbody tr {
+  transition: background 0.12s ease-in-out;
+}
+
+.stockcard-table tbody tr:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+.stockcard-table tbody tr:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+.stockcard-table tbody tr:hover {
+  background-color: #e5edff;
+}
+
+/* ===== Editable Inputs inside Table ===== */
+
+.stockcard-table .stockcard-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px 6px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  font-size: 13px;
+  font-family: "Book Antiqua", serif;
+  background-color: #ffffff;
+  pointer-events: auto !important;
+  cursor: text !important;
+}
+
+.stockcard-table .stockcard-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.35);
+}
+
+.stockcard-table .date-input {
+  min-width: 130px;
+}
+
+.stockcard-table .qty-input {
+  text-align: right;
+}
+
+.stockcard-table .days-input {
+  text-align: right;
+  min-width: 70px;
+}
+
+/* ===== Bottom Download Button (similar style to btn-primary green) ===== */
+
+.bottom-action {
+  margin-top: 8px;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.print-btn {
+  border-radius: 999px;
+  padding: 9px 22px;
+  font-size: 14px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  background: linear-gradient(135deg, #15803d, #22c55e);
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(34, 197, 94, 0.28);
+  transition: filter 0.15s ease-in-out, transform 0.1s ease-in-out;
+}
+
+.print-btn:hover:not(:disabled) {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+
+.print-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+  box-shadow: none;
+}
+
+/* ===== Print styles (match inventory behavior) ===== */
+
+@media print {
+  body {
+    margin: 0;
+    background: #ffffff;
+  }
+
+  .stockcard-container {
+    padding: 0;
+    height: auto;
+    overflow: visible;
+    box-shadow: none;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .table-card {
+    box-shadow: none;
+    padding: 0;
+    border: none;
+  }
+
+  .stockcard-table {
+    min-width: auto;
+    font-size: 12px;
+  }
+
+  .stockcard-table th,
+  .stockcard-table td {
+    padding: 6px 4px;
+    border: 1px solid #000;
+  }
+}
+
+/* ===== Responsive ===== */
+
+@media (max-width: 768px) {
+  .stockcard-container {
+    padding: 16px;
+    height: auto;
+  }
+
+  .stockcard-meta {
+    flex-direction: column;
+  }
+
+  .controls-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .controls-right {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .search-field {
+    min-width: 100%;
+  }
+
+  .table-card {
+    padding: 14px 12px;
+  }
+}

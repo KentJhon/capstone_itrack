@@ -1,0 +1,307 @@
+/* 🔒 Lock the whole page & viewport */
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden; /* page is fixed, only inner scroll areas move */
+}
+/* ===== Page Layout (match inventory UI) ===== */
+
+.inventory-page {
+  font-family: "Book Antiqua", serif;
+  background: #f3f4f6;
+  padding: 24px 28px;
+  /* Top nav (~70px) + bottom nav (~70px) = 140px */
+  height: calc(100vh - 140px);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow: hidden; /* page itself does not scroll */
+}
+
+/* ===== Header & Actions ===== */
+
+.inventory-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  flex-shrink: 0; /* keep header height stable */
+}
+
+.inventory-page h2 {
+  margin: 0;
+  font-size: 24px;
+  letter-spacing: 0.02em;
+  color: #111827;
+}
+
+.inventory-subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.inventory-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* ===== Generic Button Styles ===== */
+
+.btn {
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-size: 14px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: filter 0.15s ease-in-out;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+/* Top-right buttons */
+.inventory-actions .btn {
+  padding: 10px 26px !important;
+  min-width: 150px;
+  height: 40px;
+  text-align: center;
+  font-size: 14px;
+  border-radius: 999px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #1e3a8a, #2563eb);
+  color: #ffffff;
+  border-color: #1d4ed8;
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.28);
+}
+
+.btn-outline {
+  background: #ffffff;
+  color: #1e3a8a;
+  border-color: #d1d5db;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
+}
+
+.btn-primary:hover,
+.btn-outline:hover {
+  filter: brightness(1.06);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* ===== Filters Row ===== */
+
+.filters-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.search-field {
+  padding: 8px 10px;
+  min-width: 220px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  outline: none;
+  background-color: #ffffff;
+  font-family: inherit;
+}
+
+.search-field:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.3);
+}
+
+.sort-select {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background-color: #ffffff;
+  font-size: 14px;
+  outline: none;
+  font-family: inherit;
+}
+
+.sort-select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.3);
+}
+
+/* ===== Error message ===== */
+
+.error-message {
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 13px;
+}
+
+/* ===== Floating Card + Scrollable Table ===== */
+
+.inventory-table-card {
+  flex: 1 1 auto; /* take remaining space under header */
+  min-height: 0; /* important for flex + scroll */
+  background: #ffffff;
+  padding: 18px 20px 20px;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18),
+    0 4px 12px rgba(148, 163, 184, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* keep inner scroll tidy */
+}
+
+/* Only this part scrolls */
+.inventory-table-scroll {
+  margin-top: 6px;
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Custom scrollbar */
+.inventory-table-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.inventory-table-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.inventory-table-scroll::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 999px;
+}
+
+.inventory-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* ===== Table ===== */
+
+.inventory-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 760px; /* avoid squishing columns */
+}
+
+.inventory-table th,
+.inventory-table td {
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.inventory-table th {
+  background: #f9fafb;
+  color: #4b5563;
+  font-weight: 600;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.inventory-table tbody tr {
+  transition: background 0.12s ease-in-out;
+}
+
+.inventory-table tbody tr:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+.inventory-table tbody tr:hover {
+  background-color: #e5edff;
+}
+
+/* ===== Print styles ===== */
+
+@media print {
+  body {
+    margin: 0;
+    background: #ffffff;
+  }
+
+  .inventory-page {
+    padding: 0;
+    height: auto;
+    overflow: visible;
+    box-shadow: none;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .inventory-table-card {
+    box-shadow: none;
+    padding: 0;
+  }
+
+  .inventory-table th,
+  .inventory-table td {
+    font-size: 11px;
+    padding: 6px 4px;
+  }
+
+  .inventory-table {
+    min-width: auto;
+  }
+}
+
+/* ===== Responsive ===== */
+
+@media (max-width: 768px) {
+  .inventory-page {
+    padding: 16px;
+    height: auto;
+  }
+
+  .inventory-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .inventory-actions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .filters-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .search-field {
+    min-width: 100%;
+  }
+
+  .inventory-table-card {
+    padding: 14px 12px;
+  }
+}

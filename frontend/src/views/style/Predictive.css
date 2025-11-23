@@ -1,0 +1,150 @@
+/* ===== Predictive Page Layout (fixed with inner scroll) ===== */
+
+.predictive-page {
+  font-family: "Book Antiqua", serif;
+  background: #f3f4f6;
+  padding: 24px 28px;
+  /* Same pattern: top nav + bottom nav = 140px */
+  height: calc(100vh - 140px);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden; /* page itself doesn't scroll */
+}
+
+/* Header (just the title for now) */
+.predictive-header {
+  flex-shrink: 0;
+}
+
+.predictive-header h2 {
+  margin: 0;
+  font-size: 24px;
+  letter-spacing: 0.02em;
+  color: #111827;
+}
+
+/* Scrollable content under header */
+.pred-scroll {
+  flex: 1 1 auto;
+  min-height: 0; /* important for flex + scroll */
+  overflow-y: auto; /* vertical scroll here */
+  padding-right: 4px; /* small breathing room from scrollbar */
+}
+
+/* ===== Existing styles (kept, just moved under) ===== */
+
+.pred-controls {
+  display: grid;
+  grid-template-columns: 1fr 140px auto auto;
+  gap: 12px;
+  align-items: end;
+  max-width: 920px;
+  margin-bottom: 14px;
+}
+
+.pred-field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 6px;
+}
+
+.pred-field select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.pred-btn {
+  padding: 10px 14px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.pred-btn.secondary {
+  background: #f8fafc;
+}
+.pred-btn.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.pred-error {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  padding: 10px 12px;
+  border-radius: 8px;
+  max-width: 920px;
+  margin-bottom: 12px;
+}
+
+.pred-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  max-width: 920px;
+  margin: 12px 0 10px 0;
+}
+.kpi {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px;
+}
+.kpi-label {
+  font-size: 12px;
+  color: #6b7280;
+}
+.kpi-value {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.pred-table-wrap {
+  overflow-x: auto;
+  max-width: 920px;
+  margin-bottom: 16px;
+}
+.pred-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.pred-table th,
+.pred-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+.pred-table thead th {
+  background: #f8fafc;
+  font-weight: 700;
+}
+
+.pred-hint {
+  color: #64748b;
+  margin-top: 8px;
+  max-width: 920px;
+}
+
+/* Optional: nicer scrollbar inside pred-scroll */
+.pred-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.pred-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.pred-scroll::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 999px;
+}
+.pred-scroll::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
