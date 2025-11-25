@@ -198,7 +198,7 @@ function Transaction() {
                 <tr key={t.order_id}>
                   <td>{t.OR_number || "-"}</td>
                   <td style={{ textAlign: "left" }}>{t.customer_name}</td>
-                  <td>?{Number(t.total_price).toFixed(2)}</td>
+                  <td>₱{Number(t.total_price).toFixed(2)}</td>
                   <td>
                     {t.transaction_date
                       ? new Date(t.transaction_date).toLocaleString()
@@ -248,7 +248,7 @@ function Transaction() {
                 <b>Name:</b> {selectedTransaction.customer_name}
               </p>
               <p>
-                <b>Total:</b> ?{Number(selectedTransaction.total_price).toFixed(2)}
+                <b>Total:</b> ₱{Number(selectedTransaction.total_price).toFixed(2)}
               </p>
 
               <div className="modal-input">
