@@ -1,8 +1,8 @@
 {
-  "last_trained_utc": "2025-11-23T00:15:29.821336+00:00",
+  "last_trained_utc": "2025-11-27T13:47:50.095026+00:00",
   "source": "db_auto",
   "trained_count": 0,
   "skipped_count": 1,
   "cache_size": 0,
-  "model_path": "C:\\xampp\\htdocs\\iTrack_kent\\iTrack\\backend\\model.pkl"
+  "model_path": "C:\\xampp\\htdocs\\iTrack_kent\\backend\\model.pkl"
 }

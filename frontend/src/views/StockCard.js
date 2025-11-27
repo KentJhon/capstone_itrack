@@ -3,8 +3,8 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import "./style/StockCard.css";
 import logo from "../assets/logo.png";
-import api from "../auth/api";
-import notify from "../utils/notify";
+
+const API_BASE = "http://127.0.0.1:8000";
 
 function StockCard() {
   const [items, setItems] = useState([]);
@@ -55,13 +55,19 @@ function StockCard() {
     return balance;
   };
 
-  // 1️⃣ Load all items for dropdown
+  // Load all items for dropdown (sorted alphabetically by name)
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        const res = await api.get("/items");
-        const data = res.data;
-        const list = Array.isArray(data) ? data : data.items || [];
+        const res = await fetch(`${API_BASE}/items`);
+        const data = await res.json();
+        let list = Array.isArray(data) ? data : data.items || [];
+
+        // 🔠 Sort alphabetically by item.name
+        list = [...list].sort((a, b) =>
+          (a.name || "").localeCompare(b.name || "")
+        );
+
         setItems(list);
       } catch (err) {
         console.error("Error fetching items:", err);
@@ -72,11 +78,19 @@ function StockCard() {
     fetchItems();
   }, []);
 
-  // 2️⃣ Load stock card data for a given item (header + movements)
+  // Load stock card data for a given item (header + movements)
   const loadStockCardData = async (itemId) => {
     try {
-      const res = await api.get(`/stockcard/${itemId}`);
-      const data = res.data;
+      const res = await fetch(`${API_BASE}/stockcard/${itemId}`);
+      if (!res.ok) {
+        console.error("Error fetching stockcard:", res.status);
+        const openingRow = makeOpeningRow();
+        setMovements([openingRow]);
+        setEditableMovements([openingRow]);
+        return;
+      }
+
+      const data = await res.json();
 
       // header from backend
       setHeader(data.header);
@@ -108,7 +122,7 @@ function StockCard() {
     }
   };
 
-  // 3️⃣ When user picks an item
+  // When user picks an item
   const handleItemChange = async (e) => {
     const id = e.target.value;
     setSelectedItemId(id);
@@ -143,7 +157,7 @@ function StockCard() {
     await loadStockCardData(selected.item_id);
   };
 
-  // ✏️ Start editing
+  // Start editing
   const startEditing = () => {
     if (!header) return;
 
@@ -156,13 +170,13 @@ function StockCard() {
     setIsEditing(true);
   };
 
-  // ❌ Cancel editing
+  // Cancel editing
   const handleCancel = () => {
     setEditableMovements(movements);
     setIsEditing(false);
   };
 
-  // 💾 Save (frontend + backend update)
+  // Save (frontend + backend update)
   const handleSave = async () => {
     // 1) Update UI state
     setMovements(editableMovements);
@@ -188,14 +202,28 @@ function StockCard() {
 
     try {
       if (selectedItemId && payloadMovements.length) {
-        await api.put(`/stockcard/${selectedItemId}`, {
-          movements: payloadMovements,
-        });
-        console.log("Stockcard changes saved to backend.");
+        const res = await fetch(
+          `${API_BASE}/stockcard/${selectedItemId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ movements: payloadMovements }),
+          }
+        );
+
+        if (!res.ok) {
+          console.error(
+            "Failed to save stockcard changes:",
+            res.status
+          );
+        } else {
+          console.log("Stockcard changes saved to backend.");
+        }
       }
     } catch (err) {
       console.error("Error saving stockcard changes:", err);
-      notify.error("Failed to save stock card changes.");
     }
 
     console.log("Stock card rows saved:", editableMovements);
@@ -232,7 +260,7 @@ function StockCard() {
     );
   };
 
-  // 🔍 Filter rows but keep index for balance computation
+  // Filter rows but keep index for balance computation
   const sourceRows = isEditing ? editableMovements : movements;
   const rowsWithIndex = (sourceRows || []).map((row, idx) => ({ row, idx }));
 
@@ -244,7 +272,7 @@ function StockCard() {
     return dateStr.includes(term) || refStr.includes(term);
   });
 
-  // ✅ Generate & preview PDF (same balance logic)
+  // Generate & preview PDF (same balance logic)
   const handlePreviewPDF = () => {
     if (!header) return;
 
@@ -363,7 +391,6 @@ function StockCard() {
     const pdfBlob = doc.output("blob");
     const pdfURL = URL.createObjectURL(pdfBlob);
     window.open(pdfURL, "_blank");
-    notify.success("Stock card downloaded.");
   };
 
   const uiDescription =

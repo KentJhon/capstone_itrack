@@ -7,7 +7,7 @@ import api from "../auth/api";
 function Transaction() {
   const [transactions, setTransactions] = useState([]);
   const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState("latest");
+  const [filterMode, setFilterMode] = useState("all");
   const [showModal, setShowModal] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [orInput, setOrInput] = useState("");
@@ -34,14 +34,54 @@ function Transaction() {
     return isNaN(time) ? 0 : time;
   };
 
+  // 💡 Derive statusFilter + sortBy from filterMode
+  let statusFilter = "all";
+  let sortBy = "latest";
+
+  switch (filterMode) {
+    case "all":
+      statusFilter = "all";
+      sortBy = "latest";
+      break;
+    case "completed":
+      statusFilter = "completed";
+      sortBy = "latest";
+      break;
+    case "pending":
+      statusFilter = "pending";
+      sortBy = "latest";
+      break;
+    case "latest":
+      statusFilter = "all";
+      sortBy = "latest";
+      break;
+    case "oldest":
+      statusFilter = "all";
+      sortBy = "oldest";
+      break;
+    default:
+      statusFilter = "all";
+      sortBy = "latest";
+  }
+
   const filteredTransactions = transactions
+    // 🔍 search by customer name
     .filter((t) =>
       (t.customer_name || "").toLowerCase().includes(search.toLowerCase())
     )
+    // 🎯 filter by status based on filterMode
+    .filter((t) => {
+      if (statusFilter === "all") return true;
+      if (statusFilter === "pending") return !t.OR_number;
+      if (statusFilter === "completed") return !!t.OR_number;
+      return true;
+    })
+    // 🔃 sort by date, pending first
     .sort((a, b) => {
       const aHasOR = !!a.OR_number;
       const bHasOR = !!b.OR_number;
 
+      // Pending first
       if (!aHasOR && bHasOR) return -1;
       if (aHasOR && !bHasOR) return 1;
 
@@ -68,7 +108,8 @@ function Transaction() {
   const handleConfirm = async () => {
     if (!selectedTransaction) return;
 
-    if (!orInput.trim()) {
+    const trimmed = orInput.trim();
+    if (!trimmed) {
       const msg = "Please enter an O.R number before confirming.";
       setErrorMsg(msg);
       notify.error(msg);
@@ -76,7 +117,7 @@ function Transaction() {
     }
 
     const id = selectedTransaction.order_id;
-    const payload = { OR_number: orInput.trim() };
+    const payload = { OR_number: trimmed };
 
     try {
       const res = await api.post(`/orders/${id}/add_or`, payload);
@@ -87,8 +128,9 @@ function Transaction() {
           t.order_id === id
             ? {
                 ...t,
-                OR_number: json.order?.OR_number,
-                transaction_date: json.order?.transaction_date || null,
+                OR_number: json.order?.OR_number ?? trimmed,
+                transaction_date:
+                  json.order?.transaction_date || t.transaction_date || null,
               }
             : t
         )
@@ -116,23 +158,25 @@ function Transaction() {
     }
   };
 
-  const handleDelete = async () => {
-    if (!selectedTransaction) return;
-    const id = selectedTransaction.order_id;
+  // 🔴 Row-level delete (red minus beside ADD O.R#)
+  const handleDeleteRow = async (transaction) => {
+    if (!transaction) return;
+    const id = transaction.order_id;
 
     const ok = await confirmAction(
-      "Are you sure you want to delete this transaction?"
+      `Are you sure you want to delete this transaction (TR# ${id})?`
     );
     if (!ok) return;
 
     try {
       await api.delete(`/orders/${id}`);
-
       setTransactions((prev) => prev.filter((t) => t.order_id !== id));
       notify.success("Transaction deleted successfully");
-      closeModal();
     } catch (err) {
-      const msg = err?.response?.data?.detail || err.message || "Error deleting transaction";
+      const msg =
+        err?.response?.data?.detail ||
+        err.message ||
+        "Error deleting transaction";
       setErrorMsg(msg);
       notify.error(msg);
     }
@@ -153,7 +197,7 @@ function Transaction() {
 
       {/* ===== Table ===== */}
       <div className="inventory-table-card">
-        {/* Search & Sort */}
+        {/* Search & Combined Filter */}
         <div className="filters-row no-print">
           <div className="filter-group">
             <input
@@ -163,11 +207,16 @@ function Transaction() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
+
+            {/* Single dropdown: All / Completed / Pending / Latest / Oldest */}
             <select
               className="sort-select"
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
+              value={filterMode}
+              onChange={(e) => setFilterMode(e.target.value)}
             >
+              <option value="all">All</option>
+              <option value="completed">Completed</option>
+              <option value="pending">Pending</option>
               <option value="latest">Latest</option>
               <option value="oldest">Oldest</option>
             </select>
@@ -181,14 +230,14 @@ function Transaction() {
                 <th style={{ width: "15%" }}>O.R#</th>
                 <th style={{ width: "28%" }}>Customer</th>
                 <th style={{ width: "15%" }}>Total Price</th>
-                <th style={{ width: "20%" }}>Date</th>
+                <th style={{ width: "10%", whiteSpace: "nowrap" }}>Date</th>
                 <th className="no-print" style={{ width: "12%" }}>
                   Processed By
                 </th>
                 <th className="no-print" style={{ width: "8%" }}>
                   Status
                 </th>
-                <th className="no-print" style={{ width: "7%" }}>
+                <th className="no-print" style={{ width: "12%" }}>
                   Action
                 </th>
               </tr>
@@ -199,7 +248,7 @@ function Transaction() {
                   <td>{t.OR_number || "-"}</td>
                   <td style={{ textAlign: "left" }}>{t.customer_name}</td>
                   <td>₱{Number(t.total_price).toFixed(2)}</td>
-                  <td>
+                  <td className="date-col">
                     {t.transaction_date
                       ? new Date(t.transaction_date).toLocaleString()
                       : "-"}
@@ -216,18 +265,35 @@ function Transaction() {
                   </td>
                   <td className="no-print">
                     {!t.OR_number ? (
-                      <button
-                        className="add-btn"
-                        onClick={() => handleAddOR(t)}
-                      >
-                        ADD O.R#
-                      </button>
+                      <div className="action-buttons">
+                        <button
+                          className="add-btn"
+                          onClick={() => handleAddOR(t)}
+                        >
+                          ADD O.R#
+                        </button>
+                        <button
+                          className="icon-delete-btn"
+                          title="Delete transaction"
+                          onClick={() => handleDeleteRow(t)}
+                        >
+                          −
+                        </button>
+                      </div>
                     ) : (
                       "-"
                     )}
                   </td>
                 </tr>
               ))}
+
+              {filteredTransactions.length === 0 && (
+                <tr>
+                  <td colSpan={7} style={{ padding: "12px", textAlign: "center" }}>
+                    No transactions found.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -248,7 +314,8 @@ function Transaction() {
                 <b>Name:</b> {selectedTransaction.customer_name}
               </p>
               <p>
-                <b>Total:</b> ₱{Number(selectedTransaction.total_price).toFixed(2)}
+                <b>Total:</b> ₱
+                {Number(selectedTransaction.total_price).toFixed(2)}
               </p>
 
               <div className="modal-input">
@@ -270,9 +337,6 @@ function Transaction() {
             </div>
 
             <div className="modal-buttons">
-              <button className="delete-btn" onClick={handleDelete}>
-                DELETE
-              </button>
               <button className="confirm-btn" onClick={handleConfirm}>
                 CONFIRM
               </button>

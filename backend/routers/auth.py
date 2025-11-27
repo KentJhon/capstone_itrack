@@ -255,13 +255,13 @@ def refresh(
     refresh_token: str | None = Cookie(default=None, alias=COOKIE_NAME_RT),
 ):
     if not refresh_token:
-        raise HTTPException(status_code=401, detail="Missing refresh token")
+        raise HTTPException(status_code=401, detail="Your session has expired. Please log in again. ")
     try:
         claims = verify_token(refresh_token)
     except ValueError:
-        raise HTTPException(status_code=401, detail="Invalid/expired refresh token")
+        raise HTTPException(status_code=401, detail="Your session is no longer valid. Please log in again to continue.")
     if claims.get("type") != "refresh":
-        raise HTTPException(status_code=401, detail="Wrong token type")
+        raise HTTPException(status_code=401, detail="We couldn't verify your login. Please try signing in again.")
 
     user_id = int(claims["sub"])
     role = claims.get("role") or "User"

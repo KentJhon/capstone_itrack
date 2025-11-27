@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import api from "../auth/api";
 import "../views/style/Inventory.css";
 import notify from "../utils/notify";
 import confirmAction from "../utils/confirm";
+import { useGlobalLoading } from "../loading/LoadingContext";
 
-
-// 🔧 Tune this to change how aggressive the reorder threshold is
+// Tune this to change how aggressive the reorder threshold is
 // e.g. 0.7 = 70% of predicted next-month issuance
 const LOW_STOCK_PERCENT_OF_FORECAST = 0.7;
 
 function Inventory() {
   const [items, setItems] = useState([]);
+  const [loadingItems, setLoadingItems] = useState(true);
+  const [loadingForecasts, setLoadingForecasts] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null); // use ID instead of index
   const [newItem, setNewItem] = useState({
@@ -22,20 +24,25 @@ function Inventory() {
     alert: "Sufficient",
   });
 
-  // 🔹 Add Stock modal state
+  // Add Stock modal state
   const [showAddStockModal, setShowAddStockModal] = useState(false);
+  const [savingStock, setSavingStock] = useState(false);
   const [stockForm, setStockForm] = useState({
     category: "",
     itemId: "",
     amount: "",
   });
 
-  // 🔹 Forecast map from /predictive/next_month/all
+  // Forecast map from /predictive/next_month/all
   // { "item name (lowercase)": { item_name, current_stock, next_month_forecast } }
   const [forecastMap, setForecastMap] = useState({});
+  const [savingItem, setSavingItem] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
 
-  // 🔹 Search text
+  // Search text
   const [searchTerm, setSearchTerm] = useState("");
+
+  const { startLoading, stopLoading } = useGlobalLoading();
 
   // ---------------- FETCHERS ----------------
 
@@ -45,15 +52,17 @@ function Inventory() {
   }, []);
 
   const fetchItems = async () => {
+    setLoadingItems(true);
+    startLoading();
     try {
       const response = await api.get("/items");
 
-      // ✅ Support both array and {items: []} formats
+      // Support both array and {items: []} formats
       const data = Array.isArray(response.data)
         ? response.data
         : response.data.items || [];
 
-      // ✅ Only keep Garments and Stationery items
+      // Only keep Garments and Stationery items
       const filtered = data.filter(
         (item) => item.category === "Garments" || item.category === "Stationery"
       );
@@ -61,10 +70,15 @@ function Inventory() {
       setItems(filtered);
     } catch (error) {
       notify.error("Error fetching items");
+    } finally {
+      setLoadingItems(false);
+      stopLoading();
     }
   };
 
   const fetchForecasts = async () => {
+    setLoadingForecasts(true);
+    startLoading();
     try {
       const res = await api.get("/predictive/next_month/all");
 
@@ -79,6 +93,9 @@ function Inventory() {
       setForecastMap(map);
     } catch (err) {
       notify.error("Error fetching forecasts");
+    } finally {
+      setLoadingForecasts(false);
+      stopLoading();
     }
   };
 
@@ -96,7 +113,6 @@ function Inventory() {
 
     const level = Math.round(LOW_STOCK_PERCENT_OF_FORECAST * forecast);
 
-    // Make sure it’s at least 1
     return Math.max(level, 1);
   };
 
@@ -105,7 +121,7 @@ function Inventory() {
     return item.stock_quantity <= level;
   };
 
-  // 🔹 Recommended restock count based on forecast – current stock
+  // Recommended restock count based on forecast – current stock
   const getRecommendedRestock = (item) => {
     const key = String(item.name).trim().toLowerCase();
     const fcRow = forecastMap[key];
@@ -121,7 +137,6 @@ function Inventory() {
 
   // ---------------- MODALS: ADD / EDIT ITEM ----------------
 
-  // Open Add Modal
   const openAddModal = () => {
     setEditingId(null);
     setNewItem({
@@ -135,7 +150,6 @@ function Inventory() {
     setShowModal(true);
   };
 
-  // Open Edit Modal
   const openEditModal = (item) => {
     const dynamicLevel = computeDynamicReorderLevel(item);
 
@@ -145,24 +159,22 @@ function Inventory() {
       price: item.price,
       type: item.unit,
       stock: item.stock_quantity,
-      size: item.category, // "Stationery" or "Garments"
+      size: item.category,
       alert: item.stock_quantity > dynamicLevel ? "Sufficient" : "Low Stock",
     });
     setShowModal(true);
   };
 
-  // Save (Add or Edit)
   const handleSave = async () => {
+    setSavingItem(true);
+    startLoading();
     try {
       const formData = new FormData();
       formData.append("name", newItem.name);
       formData.append("unit", newItem.type);
-      formData.append("category", newItem.size); // only Stationery / Garments from dropdown
+      formData.append("category", newItem.size);
       formData.append("price", parseFloat(newItem.price));
       formData.append("stock_quantity", parseInt(newItem.stock, 10));
-
-      // We are now using dynamic reorder level from forecast,
-      // but DB column can stay 0 as a placeholder.
       formData.append("reorder_level", 0);
 
       if (editingId !== null) {
@@ -182,10 +194,13 @@ function Inventory() {
       });
       setEditingId(null);
       fetchItems();
-      fetchForecasts(); // refresh forecasts too (optional but safe)
+      fetchForecasts();
       notify.success(editingId !== null ? "Item updated" : "Item created");
     } catch (error) {
       notify.error("Failed to save item");
+    } finally {
+      setSavingItem(false);
+      stopLoading();
     }
   };
 
@@ -194,6 +209,8 @@ function Inventory() {
   const handleDelete = async (itemId) => {
     const ok = await confirmAction("Are you sure you want to delete this item?");
     if (!ok) return;
+    setDeletingId(itemId);
+    startLoading();
     try {
       await api.delete(`/items/${itemId}`);
       fetchItems();
@@ -201,12 +218,14 @@ function Inventory() {
       notify.success("Item deleted");
     } catch (error) {
       notify.error("Error deleting item");
+    } finally {
+      setDeletingId(null);
+      stopLoading();
     }
   };
 
   // ---------------- ADD STOCK FLOW ----------------
 
-  // 🔹 Open Add Stock modal
   const openAddStockModal = () => {
     setStockForm({
       category: "",
@@ -216,13 +235,13 @@ function Inventory() {
     setShowAddStockModal(true);
   };
 
-  // 🔹 Items filtered by selected category for the Item dropdown
   const stockCategoryItems = stockForm.category
     ? items.filter((item) => item.category === stockForm.category)
     : [];
 
-  // 🔹 Handle Add Stock submit
   const handleAddStock = async () => {
+    setSavingStock(true);
+    startLoading();
     try {
       const { category, itemId, amount } = stockForm;
 
@@ -247,14 +266,12 @@ function Inventory() {
 
       const newStock = selectedItem.stock_quantity + addAmount;
 
-      // Build form data using existing item values, only changing stock_quantity
       const formData = new FormData();
       formData.append("name", selectedItem.name);
       formData.append("unit", selectedItem.unit);
-      formData.append("category", selectedItem.category); // Stationery / Garments only
+      formData.append("category", selectedItem.category);
       formData.append("price", selectedItem.price);
       formData.append("stock_quantity", newStock);
-      // keep DB reorder_level as-is (0), we compute dynamic in UI
       formData.append("reorder_level", selectedItem.reorder_level);
 
       await api.put(`/items/${selectedItem.item_id}`, formData);
@@ -270,13 +287,15 @@ function Inventory() {
       fetchForecasts();
     } catch (error) {
       notify.error("Failed to add stock");
+    } finally {
+      setSavingStock(false);
+      stopLoading();
     }
   };
 
   // ---------------- FILTER + SORT FOR DISPLAY ----------------
 
   const displayItems = [...items]
-    // 1) Apply search filter
     .filter((item) => {
       if (!searchTerm.trim()) return true;
       const q = searchTerm.toLowerCase();
@@ -286,31 +305,31 @@ function Inventory() {
         (item.category || "").toLowerCase().includes(q)
       );
     })
-    // 2) Low stock first, then by reorder level
     .sort((a, b) => {
       const aLow = isLowStock(a);
       const bLow = isLowStock(b);
 
-      // Low Stock rows on top
       if (aLow && !bLow) return -1;
       if (!aLow && bLow) return 1;
 
-      // If both are Low Stock, sort by dynamic reorder level (highest first)
       if (aLow && bLow) {
-        const aLevel = computeDynamicReorderLevel(a);
-        const bLevel = computeDynamicReorderLevel(b);
-        if (bLevel !== aLevel) return bLevel - aLevel;
+        return a.name.localeCompare(b.name);
       }
 
-      // Otherwise keep their relative order (0 = no preference)
-      return 0;
+      return a.name.localeCompare(b.name);
     });
 
   // ---------------- RENDER ----------------
 
+  const showSkeleton = loadingItems || loadingForecasts;
+
+  const renderSkeletonRows = () =>
+    Array.from({ length: 6 }).map((_, idx) => (
+      <div key={idx} className="skeleton skeleton-table-row" />
+    ));
+
   return (
     <div className="inventory-page">
-      {/* Header + actions (fixed) */}
       <div className="inventory-header">
         <div>
           <h2>Inventory Items</h2>
@@ -326,7 +345,6 @@ function Inventory() {
         </div>
 
         <div className="inventory-actions">
-          {/* 🔍 Search bar inline with buttons */}
           <input
             type="text"
             className="inventory-search-input"
@@ -345,79 +363,85 @@ function Inventory() {
         </div>
       </div>
 
-      {/* Card with scrollable table only */}
       <div className="inventory-table-card">
         <div className="inventory-table-scroll">
-          <table className="inventory-table">
-            <thead>
-              <tr>
-                <th>Item ID</th>
-                <th>Item Name</th>
-                <th>Price</th>
-                <th>Unit</th>
-                <th>Category</th>
-                <th>Stock</th>
-                <th>Reorder Level</th>
-                <th>Recommended Restock</th>
-                <th>Alert</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {displayItems.map((item) => {
-                const dynamicLevel = computeDynamicReorderLevel(item);
-                const low = isLowStock(item);
-                const recommended = getRecommendedRestock(item);
+          {showSkeleton ? (
+            <div style={{ padding: "12px" }}>{renderSkeletonRows()}</div>
+          ) : (
+            <table className="inventory-table">
+              <thead>
+                <tr>
+                  <th>Item ID</th>
+                  <th>Item Name</th>
+                  <th>Price</th>
+                  <th>Unit</th>
+                  <th>Category</th>
+                  <th>Stock</th>
+                  <th>Reorder Level</th>
+                  <th>Recommended Restock</th>
+                  <th>Alert</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {displayItems.map((item) => {
+                  const dynamicLevel = computeDynamicReorderLevel(item);
+                  const low = isLowStock(item);
+                  const recommended = getRecommendedRestock(item);
 
-                return (
-                  <tr key={item.item_id}>
-                    <td>{item.item_id}</td>
-                    <td>{item.name}</td>
-                    <td>₱{item.price}</td>
-                    <td>{item.unit}</td>
-                    <td>{item.category}</td>
-                    <td>{item.stock_quantity}</td>
-                    {/* 🔹 Show dynamic reorder level instead of DB value */}
-                    <td>{dynamicLevel}</td>
-                    {/* 🔹 New Recommended Restock column */}
-                    <td>{recommended}</td>
-                    <td
-                      className={
-                        low ? "status-insufficient" : "status-sufficient"
-                      }
-                    >
-                      {low ? "Low Stock" : "Sufficient"}
-                    </td>
-                    <td className="actions-cell">
-                      <button
-                        className="table-btn edit-btn"
-                        onClick={() => openEditModal(item)}
+                  return (
+                    <tr key={item.item_id}>
+                      <td>{item.item_id}</td>
+                      <td>{item.name}</td>
+                      <td>₱{item.price}</td>
+                      <td>{item.unit}</td>
+                      <td>{item.category}</td>
+                      <td>{item.stock_quantity}</td>
+                      <td>{dynamicLevel}</td>
+                      <td>{recommended}</td>
+                      <td
+                        className={
+                          low ? "status-insufficient" : "status-sufficient"
+                        }
                       >
-                        Edit
-                      </button>
-                      <button
-                        className="table-btn delete-btn"
-                        onClick={() => handleDelete(item.item_id)}
-                      >
-                        Delete
-                      </button>
+                        {low ? "Low Stock" : "Sufficient"}
+                      </td>
+                      <td className="actions-cell">
+                        <button
+                          className={`table-btn edit-btn ${
+                            savingItem ? "busy" : ""
+                          }`}
+                          onClick={() => openEditModal(item)}
+                          disabled={savingItem}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className={`table-btn delete-btn ${
+                            deletingId === item.item_id ? "busy" : ""
+                          }`}
+                          onClick={() => handleDelete(item.item_id)}
+                          disabled={deletingId === item.item_id}
+                        >
+                          {deletingId === item.item_id ? "Deleting…" : "Delete"}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {displayItems.length === 0 && (
+                  <tr>
+                    <td colSpan="10" style={{ textAlign: "center", padding: 24 }}>
+                      No Stationery or Garments items found.
                     </td>
                   </tr>
-                );
-              })}
-              {displayItems.length === 0 && (
-                <tr>
-                  <td colSpan="10" style={{ textAlign: "center", padding: 24 }}>
-                    No Stationery or Garments items found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
 
-      {/* Add/Edit Item Modal */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal">
@@ -434,9 +458,7 @@ function Inventory() {
               type="number"
               placeholder="Price"
               value={newItem.price}
-              onChange={(e) =>
-                setNewItem({ ...newItem, price: e.target.value })
-              }
+              onChange={(e) => setNewItem({ ...newItem, price: e.target.value })}
             />
 
             <input
@@ -446,7 +468,6 @@ function Inventory() {
               onChange={(e) => setNewItem({ ...newItem, type: e.target.value })}
             />
 
-            {/* Category dropdown (Stationery / Garments only) */}
             <select
               value={newItem.size}
               onChange={(e) => setNewItem({ ...newItem, size: e.target.value })}
@@ -460,18 +481,21 @@ function Inventory() {
               type="number"
               placeholder="Stock"
               value={newItem.stock}
-              onChange={(e) =>
-                setNewItem({ ...newItem, stock: e.target.value })
-              }
+              onChange={(e) => setNewItem({ ...newItem, stock: e.target.value })}
             />
 
             <div className="modal-buttons">
-              <button className="btn btn-primary" onClick={handleSave}>
-                Save
+              <button
+                className={`btn btn-primary ${savingItem ? "busy" : ""}`}
+                onClick={handleSave}
+                disabled={savingItem}
+              >
+                {savingItem ? "Saving…" : "Save"}
               </button>
               <button
                 className="btn btn-outline"
                 onClick={() => setShowModal(false)}
+                disabled={savingItem}
               >
                 Cancel
               </button>
@@ -480,13 +504,11 @@ function Inventory() {
         </div>
       )}
 
-      {/* 🔹 Add Stock Modal */}
       {showAddStockModal && (
         <div className="modal-overlay">
           <div className="modal">
             <h3>Add Stock</h3>
 
-            {/* Category dropdown (Stationery / Garments only) */}
             <select
               value={stockForm.category}
               onChange={(e) =>
@@ -502,12 +524,9 @@ function Inventory() {
               <option value="Garments">Garments</option>
             </select>
 
-            {/* Item dropdown (depends on category) */}
             <select
               value={stockForm.itemId}
-              onChange={(e) =>
-                setStockForm({ ...stockForm, itemId: e.target.value })
-              }
+              onChange={(e) => setStockForm({ ...stockForm, itemId: e.target.value })}
               disabled={!stockForm.category}
             >
               <option value="">Select Item</option>
@@ -518,23 +537,25 @@ function Inventory() {
               ))}
             </select>
 
-            {/* Add Stock Amount */}
             <input
               type="number"
               placeholder="Add Stock Amount"
               value={stockForm.amount}
-              onChange={(e) =>
-                setStockForm({ ...stockForm, amount: e.target.value })
-              }
+              onChange={(e) => setStockForm({ ...stockForm, amount: e.target.value })}
             />
 
             <div className="modal-buttons">
-              <button className="btn btn-primary" onClick={handleAddStock}>
-                Save
+              <button
+                className={`btn btn-primary ${savingStock ? "busy" : ""}`}
+                onClick={handleAddStock}
+                disabled={savingStock}
+              >
+                {savingStock ? "Updating…" : "Save"}
               </button>
               <button
                 className="btn btn-outline"
                 onClick={() => setShowAddStockModal(false)}
+                disabled={savingStock}
               >
                 Cancel
               </button>
@@ -547,4 +568,3 @@ function Inventory() {
 }
 
 export default Inventory;
-

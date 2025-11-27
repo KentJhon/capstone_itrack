@@ -14,7 +14,6 @@ import {
 } from "recharts";
 import "../views/style/Dashboard.css";
 
-// ⭐ ADD THIS
 import { useNavigate } from "react-router-dom";
 import api from "../auth/api";
 
@@ -41,18 +40,25 @@ const monthNames = [
 
 function Dashboard() {
   const now = new Date();
-
-  // ⭐ ADD THIS
   const navigate = useNavigate();
 
+  // ---- SUMMARY / ERROR ----
   const [stats, setStats] = useState(null);
   const [loadingStats, setLoadingStats] = useState(true);
+  const [error, setError] = useState("");
 
+  // ---- LOW STOCK (same logic as Inventory) ----
   const [lowStockItems, setLowStockItems] = useState([]);
   const [loadingLowStock, setLoadingLowStock] = useState(true);
 
-  const [activeItemNames, setActiveItemNames] = useState([]);
+  // Full items list from /items (Garments + Stationery)
+  const [items, setItems] = useState([]);
 
+  // Forecast map from /predictive/next_month/all
+  // { "item name (lowercase)": { item_name, current_stock, next_month_forecast } }
+  const [forecastMap, setForecastMap] = useState({});
+
+  // ---- TOP ITEMS / SALES ----
   const [topYear, setTopYear] = useState(now.getFullYear());
   const [topMonth, setTopMonth] = useState("");
   const [topItemsData, setTopItemsData] = useState([]);
@@ -62,12 +68,32 @@ function Dashboard() {
   const [salesData, setSalesData] = useState([]);
   const [loadingSales, setLoadingSales] = useState(true);
 
-  const [error, setError] = useState("");
-
   const truncate = (str, maxLen = 12) =>
     str?.length > maxLen ? str.substring(0, maxLen) + "…" : str || "";
 
-  // Fetch Summary Stats
+  // ---------- HELPERS (same as Inventory) ----------
+
+  const computeDynamicReorderLevel = (item) => {
+    const key = String(item.name).trim().toLowerCase();
+    const fcRow = forecastMap[key];
+    const forecast = fcRow ? Number(fcRow.next_month_forecast || 0) : 0;
+
+    if (!forecast || forecast <= 0) {
+      // No meaningful forecast: fall back to stored reorder_level or 0
+      return Number(item.reorder_level || 0);
+    }
+
+    const level = Math.round(LOW_STOCK_PERCENT_OF_FORECAST * forecast);
+    return Math.max(level, 1);
+  };
+
+  const isLowStock = (item) => {
+    const level = computeDynamicReorderLevel(item);
+    return item.stock_quantity <= level;
+  };
+
+  // ---------- FETCH SUMMARY STATS ----------
+
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -83,9 +109,10 @@ function Dashboard() {
     fetchStats();
   }, []);
 
-  // Fetch Active Items
+  // ---------- FETCH ITEMS (Garments + Stationery) ----------
+
   useEffect(() => {
-    const fetchActiveItems = async () => {
+    const fetchItems = async () => {
       try {
         const res = await fetch(`${API_BASE}/items`);
         if (!res.ok) throw new Error("Failed to load items");
@@ -97,68 +124,57 @@ function Dashboard() {
           (it) => it.category === "Garments" || it.category === "Stationery"
         );
 
-        setActiveItemNames(allowed.map((it) => it.name.trim().toLowerCase()));
+        setItems(allowed);
       } catch (err) {
-        console.error("Error loading active items:", err);
+        console.error("Error loading items:", err);
       }
     };
 
-    fetchActiveItems();
+    fetchItems();
   }, []);
 
-  // Fetch Low Stock Data
-  useEffect(() => {
-    if (activeItemNames.length === 0) return;
+  // ---------- FETCH FORECASTS ----------
 
-    const fetchLowStock = async () => {
+  useEffect(() => {
+    const fetchForecasts = async () => {
       try {
-        setLoadingLowStock(true);
         const res = await fetch(`${API_BASE}/predictive/next_month/all`);
         if (!res.ok) throw new Error("Failed to load predictive data");
 
         const data = await res.json();
         const rows = Array.isArray(data.rows) ? data.rows : [];
 
-        const activeSet = new Set(activeItemNames);
+        const map = {};
+        rows.forEach((row) => {
+          const key = String(row.item_name).trim().toLowerCase();
+          map[key] = row;
+        });
 
-        const processed = rows
-          .filter((r) =>
-            activeSet.has(
-              String(r.item_name || "")
-                .trim()
-                .toLowerCase()
-            )
-          )
-          .filter((r) => (r.next_month_forecast ?? 0) > 0)
-          .map((r) => {
-            const stock = Number(r.current_stock ?? 0);
-            const need = Number(r.next_month_forecast ?? 0);
-            const threshold = need * LOW_STOCK_PERCENT_OF_FORECAST;
-            const restock = Math.max(0, Math.ceil(need - stock));
-
-            return {
-              item_name: r.item_name,
-              current_stock: stock,
-              next_month_forecast: need,
-              restock,
-              isLow: stock <= threshold,
-            };
-          })
-          .filter((r) => r.isLow)
-          .sort((a, b) => b.restock - a.restock);
-
-        setLowStockItems(processed);
+        setForecastMap(map);
       } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoadingLowStock(false);
+        console.error("Error loading forecasts:", err);
       }
     };
 
-    fetchLowStock();
-  }, [activeItemNames]);
+    fetchForecasts();
+  }, []);
 
-  // Fetch Most Sold Items
+  // ---------- COMPUTE LOW STOCK ITEMS (from items + forecastMap) ----------
+
+  useEffect(() => {
+    if (items.length === 0) return;
+
+    try {
+      setLoadingLowStock(true);
+      const lows = items.filter((item) => isLowStock(item));
+      setLowStockItems(lows);
+    } finally {
+      setLoadingLowStock(false);
+    }
+  }, [items, forecastMap]); // recompute whenever items or forecasts change
+
+  // ---------- FETCH MOST SOLD ITEMS ----------
+
   useEffect(() => {
     const fetchTopItems = async () => {
       try {
@@ -186,7 +202,8 @@ function Dashboard() {
     fetchTopItems();
   }, [topYear, topMonth]);
 
-  // Fetch Sales Report
+  // ---------- FETCH SALES REPORT ----------
+
   useEffect(() => {
     const fetchSales = async () => {
       try {
@@ -237,7 +254,7 @@ function Dashboard() {
           )}
         </div>
 
-        {/* ⭐ LOW STOCK CARD — CLICKABLE NUMBER */}
+        {/* LOW STOCK CARD — CLICKABLE NUMBER */}
         <div className="card">
           <p>Low Stock Items</p>
 

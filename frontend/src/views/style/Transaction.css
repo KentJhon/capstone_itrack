@@ -5,6 +5,7 @@ body {
   height: 100%;
   overflow: hidden; /* page is fixed, only inner scroll areas move */
 }
+
 /* ===== Page Layout (match inventory UI) ===== */
 
 .inventory-page {
@@ -148,7 +149,7 @@ body {
   box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.3);
 }
 
-/* ===== Error message (if you add one later) ===== */
+/* ===== Error message ===== */
 
 .error-message {
   margin-bottom: 8px;
@@ -238,6 +239,12 @@ body {
   background-color: #e5edff;
 }
 
+/* Date column: shrink to content */
+.inventory-table td.date-col {
+  white-space: nowrap;
+  width: 1%;
+}
+
 /* ===== Status pill & Add OR button ===== */
 
 .status-pill {
@@ -262,9 +269,9 @@ body {
   background: #09c24d; /* same color family as your action buttons */
   color: #ffffff;
   border: none;
-  border-radius: 999px; /* SAME shape */
-  padding: 6px 16px; /* SAME size */
-  font-size: 14px; /* SAME text size */
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
@@ -272,7 +279,42 @@ body {
 }
 
 .add-btn:hover {
-  filter: brightness(1.08); /* SAME hover behavior */
+  filter: brightness(1.08);
+}
+
+/* === Action buttons (ADD O.R# + red X) === */
+
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.icon-delete-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  font-size: 22px;        /* Bigger symbol */
+  font-weight: 700;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ff4d4f;
+  color: #ffffff;
+  transition: 0.15s ease-in-out;
+}
+
+.icon-delete-btn:hover {
+  background-color: #e04345;
+  transform: translateY(-1px);
+}
+
+.icon-delete-btn:active {
+  transform: translateY(0);
 }
 
 /* ===== Modal ===== */

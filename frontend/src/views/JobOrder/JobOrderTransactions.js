@@ -60,9 +60,6 @@ function JobOrderTransactions() {
         </div>
 
         <div className="inventory-actions">
-          <button className="btn btn-primary" onClick={fetchTransactions}>
-            Refresh
-          </button>
         </div>
       </div>
 

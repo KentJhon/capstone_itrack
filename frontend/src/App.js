@@ -12,6 +12,8 @@ import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import Footer from "./components/Footer";
 import { AuthProvider, useAuth } from "./auth/useAuth";
+import { LoadingProvider } from "./loading/LoadingContext";
+import GlobalLoader from "./components/GlobalLoader";
 
 // Pages
 import Login from "./views/Login";
@@ -95,21 +97,24 @@ export default function App() {
 
   return (
     <Router>
-      <AuthProvider>
-        <Toaster position="top-right" />
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route
-            path="/*"
-            element={
-              <ProtectedLayout
-                sidebarOpen={sidebarOpen}
-                toggleSidebar={toggleSidebar}
-              />
-            }
-          />
-        </Routes>
-      </AuthProvider>
+      <LoadingProvider>
+        <AuthProvider>
+          <GlobalLoader />
+          <Toaster position="top-right" />
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route
+              path="/*"
+              element={
+                <ProtectedLayout
+                  sidebarOpen={sidebarOpen}
+                  toggleSidebar={toggleSidebar}
+                />
+              }
+            />
+          </Routes>
+        </AuthProvider>
+      </LoadingProvider>
     </Router>
   );
 }
