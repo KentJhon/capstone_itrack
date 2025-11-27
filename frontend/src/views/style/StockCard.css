@@ -48,14 +48,54 @@ body {
   gap: 8px;
 }
 
-.item-select {
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid #d1d5db;
+.searchable-select {
+  position: relative;
+  width: 100%;
+}
+
+.item-select-input {
+  width: 100%;
+  padding: 9px 34px 9px 12px;
+  border-radius: 10px;
+  border: 1px solid #111;
   background: #ffffff;
-  min-width: 260px;
-  font-size: 14px;
+  font-size: 15px;
   font-family: inherit;
+  color: #111;
+}
+
+.dropdown-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #111;
+}
+
+.searchable-options {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 100%;
+  max-height: 220px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px; /* match original select radius */
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+  z-index: 25;
+}
+
+.searchable-option {
+  padding: 8px 10px; /* align with original spacing */
+  cursor: pointer;
+  transition: background 0.15s ease;
+  font-size: 14px;
+}
+
+.searchable-option:hover {
+  background: #f5f5f5;
 }
 
 /* Error message styled like inventory error-message */

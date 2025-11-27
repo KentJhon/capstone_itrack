@@ -11,6 +11,8 @@ const API_BASE = API_BASE_URL;
 function StockCard() {
   const [items, setItems] = useState([]);
   const [selectedItemId, setSelectedItemId] = useState("");
+  const [itemQuery, setItemQuery] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
   const [header, setHeader] = useState(null);
 
   // movements = [openingRow, ...rowsFromBackend]
@@ -80,6 +82,17 @@ function StockCard() {
     fetchItems();
   }, []);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const onClickOutside = (e) => {
+      if (!e.target.closest(".searchable-select")) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, []);
+
   // Load stock card data for a given item (header + movements)
   const loadStockCardData = async (itemId) => {
     try {
@@ -124,9 +137,7 @@ function StockCard() {
     }
   };
 
-  // When user picks an item
-  const handleItemChange = async (e) => {
-    const id = e.target.value;
+  const selectItem = async (id) => {
     setSelectedItemId(id);
     setError("");
     setIsEditing(false);
@@ -138,9 +149,7 @@ function StockCard() {
       return;
     }
 
-    const selected = items.find(
-      (item) => String(item.item_id) === String(id)
-    );
+    const selected = items.find((item) => String(item.item_id) === String(id));
     if (!selected) {
       setHeader(null);
       setMovements([]);
@@ -149,7 +158,6 @@ function StockCard() {
       return;
     }
 
-    // Temporary header while waiting for backend response
     setHeader((prev) => ({
       ...(prev || {}),
       ...selected,
@@ -409,20 +417,52 @@ function StockCard() {
       <div className="item-selector-bar no-print">
         <label className="item-selector-label">
           Item:
-          <select
-            className="item-select"
-            value={selectedItemId}
-            onChange={handleItemChange}
-          >
-            <option value="">
-              {items.length ? "Select an item" : "Loading items..."}
-            </option>
-            {items.map((item) => (
-              <option key={item.item_id} value={item.item_id}>
-                {item.name}
-              </option>
-            ))}
-          </select>
+          <div className="searchable-select">
+            <input
+              className="item-select-input"
+              placeholder={items.length ? "Type or select item" : "Loading..."}
+              value={itemQuery}
+              onFocus={() => setShowDropdown(true)}
+              onChange={(e) => {
+                setItemQuery(e.target.value);
+                setShowDropdown(true);
+              }}
+            />
+            <div className="dropdown-icon">▾</div>
+            {showDropdown && (
+              <div className="searchable-options">
+                <div
+                  className="searchable-option"
+                  onMouseDown={() => {
+                    setItemQuery("");
+                    setShowDropdown(false);
+                    selectItem("");
+                  }}
+                >
+                  {items.length ? "Clear selection" : "Loading items..."}
+                </div>
+                {items
+                  .filter((item) =>
+                    item.name
+                      ?.toLowerCase()
+                      .includes((itemQuery || "").toLowerCase())
+                  )
+                  .map((item) => (
+                    <div
+                      key={item.item_id}
+                      className="searchable-option"
+                      onMouseDown={() => {
+                        setItemQuery(item.name || "");
+                        setShowDropdown(false);
+                        selectItem(item.item_id);
+                      }}
+                    >
+                      {item.name}
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
         </label>
       </div>
 
