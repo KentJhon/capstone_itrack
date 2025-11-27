@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import "../JobOrder/style/JobOrderTransactions.css";
 import { useNavigate } from "react-router-dom";
 import { FiArrowLeft } from "react-icons/fi";
-
-const API_BASE = "http://127.0.0.1:8000";
+import API_BASE_URL from "../../config";
+import { formatDateTime } from "../../utils/datetime";
 
 function JobOrderTransactions() {
   const [transactions, setTransactions] = useState([]);
@@ -15,13 +15,16 @@ function JobOrderTransactions() {
     fetchTransactions();
   }, []);
 
-  const fetchTransactions = () => {
-    fetch(`${API_BASE}/job-orders/transactions`)
-      .then((res) => res.json())
-      .then((data) => setTransactions(data.transactions || []))
-      .catch((err) =>
-        console.error("Error fetching job order transactions:", err)
-      );
+  const fetchTransactions = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/job-orders/transactions`, {
+        credentials: "include",
+      });
+      const data = await res.json();
+      setTransactions(data.transactions || []);
+    } catch (err) {
+      console.error("Error fetching job order transactions:", err);
+    }
   };
 
   const getDateValue = (t) => {
@@ -107,7 +110,7 @@ function JobOrderTransactions() {
                   <td>₱{Number(t.total_price).toFixed(2)}</td>
                   <td>
                     {t.transaction_date
-                      ? new Date(t.transaction_date).toLocaleString()
+                      ? formatDateTime(t.transaction_date)
                       : "Null"}
                   </td>
                   <td className="no-print">{t.username || "-"}</td>

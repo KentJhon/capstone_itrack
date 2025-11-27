@@ -32,7 +32,7 @@ export default function JobOrderSlip({ onClose }) {
     (async () => {
       try {
         setLoading(true);
-        const res = await fetch(`${API}/items`);
+        const res = await fetch(`${API}/items`, { credentials: "include" });
         const data = await res.json();
 
         const souvenirItems = (data || []).filter((item) => {
