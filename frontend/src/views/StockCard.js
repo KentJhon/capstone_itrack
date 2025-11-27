@@ -4,6 +4,7 @@ import autoTable from "jspdf-autotable";
 import "./style/StockCard.css";
 import logo from "../assets/logo.png";
 import API_BASE_URL from "../config";
+import { formatDate } from "../utils/datetime";
 
 const API_BASE = API_BASE_URL;
 

@@ -4,6 +4,7 @@ import autoTable from "jspdf-autotable";
 import "./style/MonthlyReport.css";
 import logo from "../assets/logo.png";
 import api from "../auth/api";
+import { formatDate } from "../utils/datetime";
 
 const monthNames = [
   "January",
@@ -93,7 +94,7 @@ function MonthlyReport() {
 
     const tableData = filteredRows.map((r) => [
       r.or_number,
-      new Date(r.date).toLocaleDateString(),
+      formatDate(r.date),
       r.payer,
       r.qty_sold,
       r.unit,
@@ -136,7 +137,7 @@ function MonthlyReport() {
       },
     });
 
-    const genDate = new Date().toLocaleDateString();
+    const genDate = formatDate(new Date());
     doc.setFontSize(10);
     doc.text(`Generated on: ${genDate}`, 14, 290);
 
@@ -241,7 +242,7 @@ function MonthlyReport() {
               {filteredRows.map((r, index) => (
                 <tr key={`${r.date}-${r.or_number}-${index}`}>
                   <td>{r.or_number}</td>
-                  <td>{new Date(r.date).toLocaleDateString()}</td>
+                  <td>{formatDate(r.date)}</td>
                   <td>{r.payer}</td>
                   <td>{r.qty_sold}</td>
                   <td>{r.unit}</td>
