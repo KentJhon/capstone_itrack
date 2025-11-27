@@ -2,10 +2,24 @@ const BASE_OPTIONS = {
   timeZone: "Asia/Manila",
 };
 
+function parseUtc(value) {
+  if (!value) return null;
+  if (value instanceof Date) return value;
+  if (typeof value === "number") return new Date(value);
+
+  if (typeof value === "string") {
+    // If the string has no timezone info, treat it as UTC to avoid off-by-one-day shifts.
+    const hasZone = /[zZ]|[+-]\d{2}:?\d{2}$/.test(value);
+    const iso = hasZone ? value : `${value}Z`;
+    const d = new Date(iso);
+    if (!Number.isNaN(d.getTime())) return d;
+  }
+  return null;
+}
+
 export function formatDateTime(value, opts = {}) {
-  if (!value) return "";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
+  const date = parseUtc(value);
+  if (!date) return "";
   return new Intl.DateTimeFormat("en-PH", {
     ...BASE_OPTIONS,
     year: "numeric",
@@ -19,9 +33,8 @@ export function formatDateTime(value, opts = {}) {
 }
 
 export function formatDate(value, opts = {}) {
-  if (!value) return "";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
+  const date = parseUtc(value);
+  if (!date) return "";
   return new Intl.DateTimeFormat("en-PH", {
     ...BASE_OPTIONS,
     year: "numeric",
