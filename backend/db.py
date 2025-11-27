@@ -4,8 +4,9 @@ import mysql.connector
 from mysql.connector import Error
 from dotenv import load_dotenv
 
-# ✅ Load .env when running locally
+# Load .env when running locally
 load_dotenv()
+
 
 def get_db():
     """
@@ -16,10 +17,11 @@ def get_db():
     """
     try:
         host = os.getenv("DB_HOST", "127.0.0.1")
-        port = int(os.getenv("DB_PORT", "3306"))  # ✅ defaults to 3306
+        port = int(os.getenv("DB_PORT", "3306"))  # defaults to 3306
         user = os.getenv("DB_USER", "root")
         password = os.getenv("DB_PASSWORD", "")
         database = os.getenv("DB_NAME", "itrack")
+        time_zone = os.getenv("DB_TIMEZONE", "+08:00")  # default to PH time
 
         conn = mysql.connector.connect(
             host=host,
@@ -30,13 +32,20 @@ def get_db():
         )
 
         if conn.is_connected():
+            # Align session timezone so DATE/TIMESTAMP reflect PH time in queries
+            try:
+                cur = conn.cursor()
+                cur.execute("SET time_zone = %s", (time_zone,))
+                cur.close()
+            except Exception:
+                pass
             return conn
 
-        print("❌ Database connected but connection is not active.")
+        print("?? Database connected but connection is not active.")
         raise Error("Connection is not active")
 
     except Error as e:
         # This will show up in your backend logs
-        print("❌ Database connection error:", e)
+        print("?? Database connection error:", e)
         # Let FastAPI return 500 instead of silently returning None
         raise
