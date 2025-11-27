@@ -2,6 +2,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import api from "../auth/api";
 import "../views/style/ActivityLog.css";
+import { formatDateTime } from "../utils/datetime";
 
 export default function ActivityLog() {
 
@@ -183,9 +184,7 @@ export default function ActivityLog() {
                   <td>{formatUser(r)}</td>
                   <td>{r.action}</td>
                   <td className="desc">{r.description}</td>
-                  <td>
-                    {r.timestamp ? new Date(r.timestamp).toLocaleString() : ""}
-                  </td>
+                  <td>{r.timestamp ? formatDateTime(r.timestamp) : ""}</td>
                 </tr>
               ))}
           </tbody>

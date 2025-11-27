@@ -3,6 +3,7 @@ import "./style/Transaction.css";
 import notify from "../utils/notify";
 import confirmAction from "../utils/confirm";
 import api from "../auth/api";
+import { formatDateTime, formatDate } from "../utils/datetime";
 
 function Transaction() {
   const [transactions, setTransactions] = useState([]);
@@ -250,7 +251,7 @@ function Transaction() {
                   <td>₱{Number(t.total_price).toFixed(2)}</td>
                   <td className="date-col">
                     {t.transaction_date
-                      ? new Date(t.transaction_date).toLocaleString()
+                      ? formatDateTime(t.transaction_date)
                       : "-"}
                   </td>
                   <td className="no-print">{t.username || "-"}</td>
@@ -304,7 +305,7 @@ function Transaction() {
         <div className="modal-overlay no-print" onClick={closeModal}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>Book Center</h3>
-            <p className="modal-date">{new Date().toLocaleDateString()}</p>
+            <p className="modal-date">{formatDate(new Date())}</p>
 
             <div className="modal-info">
               <p>
